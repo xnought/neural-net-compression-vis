@@ -1,8 +1,16 @@
 ---
-title: This is it
-lastUpdate: 05/21/2002
+title: K-Means Quantization
+lastUpdate: August 2023
 ---
 
-## What is the meaning of life?
+<script>
+	import Counter from "../../../components/Counter.svelte";
+</script>
 
-it is what it is [google](www.google.com).
+A deep dive into weight quantization with interactive visuals.
+
+## Introduction
+
+it is what it is [google](https://www.google.com).
+
+<Counter />
