@@ -74,6 +74,17 @@ I may consider the most important color the average of all the colors. Intuitive
 
 <img src="dog.png" style="width: 200px">
 
-First, I can take all the possible
+By simply taking the average over all the colors in the image, I can get the most average color to represent the entire image.
 
-<KMeansImage />
+As you can see, by just picking one color, it makes sense that it's this type of brown, but nonetheless to simplistic to see the image.
+
+<KMeansImage selected={0}/>
+
+How about the top two colors?
+
+<KMeansImage selected={1}/>
+
+If we continue to take the top average colors, we get something that rapidly looks like the original image with the fraction of colors, and thus less information.
+Try sliding the slider on your own to quickly see these differences.
+
+<KMeansImage selected={2}/>
