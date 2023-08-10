@@ -16,5 +16,6 @@
     "vite": "^4.4.3"
   },
   "type": "module",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {}
 }
