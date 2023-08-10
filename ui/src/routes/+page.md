@@ -1,11 +1,11 @@
 ---
 title: Entropic
 heroImage: /logo.png
-tagline: Visual articles for important ideas
+tagline: Deriving Ideas from Scratch with Visualizations
 actions:
     - label: View Articles
       type: primary
-      to: /articles/quant
+      to: /quant
       external: true
 # features:
 #     - title: Markdown centered

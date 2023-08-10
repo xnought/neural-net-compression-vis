@@ -87,4 +87,12 @@ How about the top two colors?
 If we continue to take the top average colors, we get something that rapidly looks like the original image with the fraction of colors, and thus less information.
 Try sliding the slider on your own to quickly see these differences.
 
-<KMeansImage selected={2}/>
+<KMeansImage selected={3}/>
+
+### Space savings
+
+By taking these important colors and removing all the other colors, we can represent the image with a significantly smaller footprint. And for sufficiently large number of colors, the image looks almost the same.
+
+First I can quantify the saved space.
+
+Then, I can quantify the amount of error between the original and compressed image.
