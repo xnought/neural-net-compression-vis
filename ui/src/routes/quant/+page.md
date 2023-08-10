@@ -4,6 +4,7 @@ lastUpdate: August 2023
 ---
 
 <script>
+    import KMeansImage from "../../components/KMeansImage.svelte";
 </script>
 <style>
     img {
@@ -74,3 +75,5 @@ I may consider the most important color the average of all the colors. Intuitive
 <img src="dog.png" style="width: 200px">
 
 First, I can take all the possible
+
+<KMeansImage />
