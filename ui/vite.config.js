@@ -20,11 +20,11 @@ const config = defineConfig({
 					quantization: [
 						{
 							title: "Articles",
-							collapsible: true,
+							collapsible: false,
 							items: [
 								{
 									title: "Quantization",
-									to: "/articles/quant",
+									to: "/quant",
 								},
 							],
 						},

@@ -1,7 +1,7 @@
 <!-- Leave this. Or you can add more content for your custom layout -->
 <slot />
 
-<svelte:head>
+<!-- <svelte:head>
 	<link
 		rel="stylesheet"
 		href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"
@@ -36,7 +36,7 @@
 			});
 		});
 	</script>
-</svelte:head>
+</svelte:head> -->
 
 <style>
 </style>
