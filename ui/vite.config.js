@@ -34,7 +34,7 @@ const config = defineConfig({
 				logo: "/logo.png",
 			}),
 			siteConfig: {
-				title: "Entropic",
+				title: "_",
 				description: "...",
 			},
 		}),
