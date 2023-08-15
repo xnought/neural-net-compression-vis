@@ -1,5 +1,5 @@
 ---
-title: Quantization
+title: On Model Quantization Error
 lastUpdate: August 2023
 ---
 
@@ -12,87 +12,118 @@ lastUpdate: August 2023
         border-radius: 5px;
         box-shadow: 0px 0px 2px 2px #00000020;
     }
+    .caption {
+        font-size: 12px;
+        margin: 0;
+        color: grey;
+    }
 
-    /* .thumb {
+    .thumb {
         height: 100%;
-        min-height: 300px;
+        min-height: 200px;
         margin-right: 20px;
         background-size: cover;
         background-position: top left;
-        transition-property: background;
+        transition-property: background, box-shadow;
         transition-duration: 1.5s;
         transition-timing-function: ease;
         transition-delay: 0s;
-        border: 1px solid rgba(0, 0, 0, 0.25);
-        border-radius: 2px;
+        border-radius: 5px;
+        box-shadow: 0px -1px 2px 2px #00000020;
     }
     .thumb:hover {
-        background-position: top right;
-    } */
+        background-position: bottom left;
+        box-shadow: 0px 1px 2px 2px #00000020;
+    }
 </style>
 
-Explaining Model Quantization from first principles with interactive visualizations.
+Visualizing how error can crop up in a type of sharing quantization. Specifically analyzing the condition number after quantization of weight tensors.
 
-## My Plan
+<!-- ## My Plan
 
 -   [x] Explain the problem as fundamentally and simply as possible
--   [ ] K-means quantization
-    -   [ ] intuitive example with image
-    -   [ ] build up for how to pick the values
-    -   [ ] take an autoencoder that reconstructs pixel art
-    -   [ ] show errors for different amounts of quantization
-    -   [ ] scale up to stable diffusion quantization
-    -   [ ] connect to information theoretic standpoint
+-   [ ] Explain how we can save a ton of space by sharing colors/weights
+-   [ ] Have a cool webcam example of live k-means weight sharing
+-   [ ] Yes massive space savings, but how does the affect key operations? Is there something to be said about the matrix itself?
+-   [ ] Deriving condition number specifically after k-means quantization and putting a number to the error
+-   [ ] Specifically honing in on attention mechanism for quantization -->
 
-## Who cares?
+## Too Big
 
-Complex behavior requires complex computation. Today's most sophisticated neural networks are massive! They require layers upon layers of interconnected computation just to express certain outputs.
+Modern neural networks are really freaking cool. For example, with [Stable Diffusion](https://stability.ai/stablediffusion), you can generate your own [anime waifu](https://github.com/harubaru/waifu-diffusion). Enough said, clearly you are already convinced.
 
-<img src="stable.png">
+<div style="background-image: url(taller.png);height: 50px;" class="thumb"/>
 
-For example, take [Stable Diffusion](https://stability.ai/stablediffusion) (text to image generation). To encode such a vast array of creative, colorful, and beautiful behaviors (like those above), the model must be sufficiently complex. And indeed the model has hundreds of millions of parameters.
+_From [Lexica](https://lexica.art/?q=34e00886-6b4f-47fe-a9b9-9f4e630bbb28)'s Aperture Model._
 
-You likely can't run such models without expensive hardware. And even if you can run them, it might take a century for one generation.
+Joking aside, the detail and creativity is beautiful with no exaggeration. But there is also a beauty to the thing itself. The neural networks that generate such art have hundreds of millions or even billions of tunable knobs that are interconnected in such a way to create something meaningful.
 
-I can't accept that. So let's leverage a stupid fact to make our situation better: smaller models run faster than bigger models.
+The awesomeness of so many parameters unfortunately has its downsides. Namely, you need expensive computers to run these large models. There are so many parameters that the model may not even fit in your computer's memory[^1]. And even if it can fit, you might wait your entire lifetime just to do one generation. Too damn slow!
 
-By the end of this article, you will have understood one popular type of model compression and will be able to run stable diffusion in your browser.
+[^1]: For example the new cool models of today like [Llama2](https://huggingface.co/docs/transformers/main/model_doc/llama2) needs > 100 GB ram just to fit.
 
-## Images
+So, to actually run these models on your hardware, smart people have developed [quantization](https://pytorch.org/docs/stable/quantization.html) techniques to make the models smaller. The main point: reduce the number of floating point numbers[^2] you store and use.
 
-Taking an already trained model and making it smaller while not corrupting the important information is THE task. But before we get to a model, how can we accomplish this on something more intuitive: image compression.
+[^2]: Formats to store decimal numbers. Aka, not integers. 32 or 16 bit floating point. See [here](https://www.wikiwand.com/en/Floating-point_arithmetic) for more info.
 
-To make an image smaller, I might just change the width and height to something smaller. But, this type of manipulation has it's limitations. Among algorithmic considerations, I'd really like to keep the image the same size. I'd prefer not to squint.
+Can we use an extremely simple techniques to reduce the model size drastically? Furthermore, how can we compress without killing the magic. Let's try!
 
-Another idea is to remove information that doesn't take away from the meaning of the image. Essentially remove all the colors that can be removed and keep all the colors that absolutely must be there.
+## Sharing is caring
 
-If I consider the image a collection of numbers (height, width, 3) tensor, the aim would be to consolidate the 3 channel colors into only the most important colors. Then, how does one find the most important colors?
+Why would we buy 20 toys for 20 dogs when we could just buy 5? Not all the toys are in use all the time. Furthermore, their may be fun in sharing the toy with a dograde (comrade, but dog). Instead of buying 20 toys at 20 dollars each, 400 dollars total, I'll just buy 5 for 100 dollars total! A 4x savings!
 
-### Finding Important Colors
+Now, there may be downsides of 5 toys. Certain dogs may rip toys up to shreds, or some dogs may be left behind with no toys. Darn the alphas! Instead of saving you may spiral into madness. This is not fair in our dog democracy.
 
-I may consider the most important color the average of all the colors. Intuitively this would be the "center" of the data and may be a good choice. For example, let's take the following image and try to make it as small as we can.
+This tradeoff can be easily seen in a simple example of trying to make images smaller. Let's see.
 
-<img src="dog.png" style="width: 200px">
+For example, I'll start with a 880 pixels wide by 602 pixels tall image of this cutest golden retriever you've ever seen.
 
-By simply taking the average over all the colors in the image, I can get the most average color to represent the entire image.
+<img src="dog.png" style="width: 300px;">
 
-As you can see, by just picking one color, it makes sense that it's this type of brown, but nonetheless to simplistic to see the image.
+For this image, there are 880 times 602 pixels which totals to 4,864,160 pixels. There are three colors that represent each pixel: red, green, and blue. So in total there are 4,864,160 \* 3 = 14,592,480 numbers we store for that image. Each color is represented by a number from 0 to 255 or just one unsigned 8 bit integer: one byte. So this image has 14,592,480 bytes, or ~14 mega bytes.
+
+That's a lot of bytes!
+
+:::tip[think]
+How much data can we remove so that the image still looks like a dog?  
+:::
+
+One powerful intuition is using averages. You may ask yourself: what is the average color of the image? Perhaps that would leave us with the most important single color. Instead of 4,864,160 colors, I would then just store 1. Or instead of 14,592,480 bytes, I would just store 3.
 
 <KMeansImage selected={0}/>
 
-How about the top two colors?
+You will not be surprised to know that one color isn't useful. We've lost the dog! It looks nothing like the original! But, the averaged color isn't completely out of left field. It seems to have captured the average of the dogs color, table, and background.
+
+What if we increase the number of average colors to compute? How about we now store two averages? Would that look more like the image?
 
 <KMeansImage selected={1}/>
 
-If we continue to take the top average colors, we get something that rapidly looks like the original image with the fraction of colors, and thus less information.
-Try sliding the slider on your own to quickly see these differences.
+That is starting to look like a dog! Let's continue to see how close we get to the original!
 
-<KMeansImage selected={3}/>
+:::important[interaction]
+Keep on increasing the number of average colors to compute by dragging the slider below.
+:::
 
-### Space savings
+<KMeansImage selected={2} showSlider/>
 
-By taking these important colors and removing all the other colors, we can represent the image with a significantly smaller footprint. And for sufficiently large number of colors, the image looks almost the same.
+Storing 128 colors looks extremely close to the original image. And here we only store the 128\*3 bytes for each average color, then one byte for each pixel to index into the closest average color.
 
-First I can quantify the saved space.
+In total instead of 14,592,480 for the original image, we only store 128\*3 + 4,864,160 = 4,864,544 which is almost a 4x savings for something that looks very similar.
 
-Then, I can quantify the amount of error between the original and compressed image.
+:::note
+I've left out some information on how to compute these multiple averages.
+
+**For the purposes of this article, you can ignore how I compute the averages.**
+
+However, if you must know I use the [k-means algorithm](https://k-means-explorable.vercel.app/) on the image pixels to select out the top k average colors and assign each pixel one of those k colors.
+
+For example, for the top k=4 colors, I run the k-means algorithm which locates 4 "centroids" which are rough centers in the color data: 4 averages. Then, I can go through each pixel and see which average (centroid) is closest to that color and assign it that average color.
+
+So each pixel can be represented by a single byte 0, 1, 2, or 3 which then references one of the average colors we computed.
+:::
+
+## Err on the side of Error
+
+Now we have massive space savings. But the way we've defined good and bad is suspect. Different people will judge differently on how many colors we actually need to represent the image.
+
+<!-- Furthermore, can we algorithmically say when an image  -->
