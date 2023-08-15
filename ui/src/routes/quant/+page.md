@@ -106,9 +106,13 @@ Keep on increasing the number of average colors to compute by dragging the slide
 
 <KMeansImage selected={2} showSlider/>
 
-Storing 128 colors looks extremely close to the original image. And here we only store the 128\*3 bytes for each average color, then one byte for each pixel to index into the closest average color.
+Instead of 4,864,160 colors for the original image, we only store 128 colors now.
 
-In total instead of 14,592,480 for the original image, we only store 128\*3 + 4,864,160 = 4,864,544 which is almost a 4x savings for something that looks very similar.
+Each pixel still needs to reference which of the 128 colors to use. So we still need to keep one byte per each pixel. Then when you need to access the pixel, you can use the number to index into the 128 colors.
+
+To tally the space savings now, for the compressed image we store one number per pixel plus the 128 average colors which totals to 128\*3 + 4,864,160 = 4,864,544 bytes.
+
+Compared to the original of 14,592,480 bytes that is ~3 times smaller!
 
 :::note
 I've left out some information on how to compute these multiple averages.
