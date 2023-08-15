@@ -88,7 +88,9 @@ That's a lot of bytes!
 How much data can we remove so that the image still looks like a dog?  
 :::
 
-One powerful intuition is using averages. You may ask yourself: what is the average color of the image? Perhaps that would leave us with the most important single color. Instead of 4,864,160 colors, I would then just store 1. Or instead of 14,592,480 bytes, I would just store 3.
+One powerful intuition is using averages as the sharing mechanism.
+
+You may ask yourself: what is the average color of the image? Perhaps that would leave us with the most important single color. Instead of 4,864,160 colors, I would then just store 1 color. Its like if all the pixels are sharing one color.
 
 <KMeansImage selected={0}/>
 
@@ -124,10 +126,27 @@ However, if you must know I use the [k-means algorithm](https://k-means-explorab
 For example, for the top k=4 colors, I run the k-means algorithm which locates 4 "centroids" which are rough centers in the color data: 4 averages. Then, I can go through each pixel and see which average (centroid) is closest to that color and assign it that average color.
 
 So each pixel can be represented by a single byte 0, 1, 2, or 3 which then references one of the average colors we computed.
+
+We are sharing colors!
 :::
 
 ## Err on the side of Error
 
-Now we have massive space savings. But the way we've defined good and bad is suspect. Different people will judge differently on how many colors we actually need to represent the image.
+It is not a crazy leap to use the image example as an analog to the weights in a neural network. Instead of color sharing, we can do weight sharing! Representing the floating point numbers as small integers that index into the top averages. It would massively compress these models! Potentially a 4x savings (from f32 to u8).
+
+But there is a compressed elephant in the room.
+
+First, the weights are being multiplied with input numbers, then being multiplied by more weights, and so forth. Surely the error from one layer of weights would amplify, right? The model was trained on the real numbers, not the shared averages!
+
+Now it's easy to see from the dog image that 128 colors represented the original image surprisingly well. But, if you had something you couldn't look at, how would you define how good/close the compression is to the original?
+
+Together, we can come up with some error measurement so that we can see if a neural network would take well or be destroyed by quantization without looking at the results.
+
+-   [ ] Inspiration from the image example (show pixelwise error)
+-   [ ] Matrix operator norm the error
+-   [ ] Applying the error to a model
+-   [ ] Using the error metric to do further training
+-   [ ] Applying the results to a real model
+-   [ ] Be done with it!
 
 <!-- Furthermore, can we algorithmically say when an image  -->
