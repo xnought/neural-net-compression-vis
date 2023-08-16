@@ -61,6 +61,7 @@ declare module '$env/static/private' {
 	export const PAGER: string;
 	export const npm_package_devDependencies_svelte: string;
 	export const LSCOLORS: string;
+	export const npm_package_dependencies_katex: string;
 	export const PATH: string;
 	export const npm_config_argv: string;
 	export const _: string;
@@ -182,6 +183,7 @@ declare module '$env/dynamic/private' {
 		PAGER: string;
 		npm_package_devDependencies_svelte: string;
 		LSCOLORS: string;
+		npm_package_dependencies_katex: string;
 		PATH: string;
 		npm_config_argv: string;
 		_: string;

@@ -1,15 +1,8 @@
 <script>
-	import { onMount } from "svelte";
-
 	const images = [1, 2, 4, 8, 16, 32, 64, 128].map((x) => `${x}.png`);
 	export let selected = 2;
 	export let width = 300;
 	export let showSlider = false;
-
-	// onMount(() => {
-	// 	const img = document.querySelector("#original");
-	// 	console.log(img.naturalWidth, img.naturalHeight);
-	// });
 </script>
 
 {#if showSlider}

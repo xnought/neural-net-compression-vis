@@ -6,6 +6,7 @@ lastUpdate: August 2023
 <script>
     import KMeansImage from "../../components/KMeansImage.svelte";
     import ImageError from "../../components/ImageError.svelte";
+    import ImageErrorWithNumber from "../../components/ImageErrorWithNumber.svelte";
     import Math from "../../components/KaTeX.svelte";
 </script>
 <style>
@@ -50,7 +51,7 @@ Visualizing how error can crop up in a type of sharing quantization. Specificall
 -   [ ] Deriving condition number specifically after k-means quantization and putting a number to the error
 -   [ ] Specifically honing in on attention mechanism for quantization -->
 
-## Too Big
+## Bigger is not always better
 
 Modern neural networks are really freaking cool. For example, with [Stable Diffusion](https://stability.ai/stablediffusion), you can generate your own [anime waifu](https://github.com/harubaru/waifu-diffusion). Enough said, clearly you are already convinced.
 
@@ -140,24 +141,47 @@ But there is a compressed elephant in the room.
 
 How does the error between the compressed and original values affect the outputs? For images atleast its easy to see that the images looks similar, and therefore the compression at a certain level is tolerable.
 
+### Images
+
 But for other applications it's not so easy to tell whether some values are good or not.
 
 So it may be helpful to quantify the error into a number. Visually this can be seen as the distance between the compressed value and the true original value.
 
-For an image, we can clearly visualize the error in red where the values are most wrong.
+For an image, we can clearly visualize the pixel-wise error in red. Basically, where the compressed image is different from the original.
 
 :::important[interaction]
-Drag the slider to increase the number of average colors. Specifically look at the error in red.
+Drag the slider to increase the number of average colors. Specifically look at the places with deep red to see the most error.
 :::
 
 <ImageError />
 
 As the compressed image gets better, the error becomes almost invisible!
 
-How can we take the information and use one number to say the amount of error? Well, I could just sum up these errors, then I could divide by the total number from the original image.
+In other words, for each pixel at (location <Math text="i" />) I find the difference between the color channels of the compressed <Math text="\hat[A]" /> and the original <Math text="A" />. For example if the compressed color was [0,0,0] white and the original color was [255,255,255] black the summed error would be |255-0| + |255-0| + |255-0| or {255\*3} for that pixel. This would be an example of the maximum amount of error (pixel should have been black, but the compressed is white).
 
-What is <Math text="\frac[1][2]"/>?
+:::note
+I store all these errors for all the pixels in an error matrix <Math text="E"/> defined by <Math text="D_[i] = \sum_[c=1]^[3] |A_[i, c] - \hat[A]_[i,c]| \tag{1}" big /> (exactly what I just said before)
+which is displayed above as the error in red.
 
-<Math begin="align*" text="\sum_[i=1]" />
+The closer the sum is to completely wrong the closer it is 255\*3 which is the gap between white and black.
+
+Then, I can very easily compress the pixel error <Math text="D" /> in <Math text="(1)" /> into an average error <Math text="\frac[1][N]\sum_[i=1]^[N] D_[i]" /> where <Math text="N" /> is the total number of pixels.
+
+:::
+
+:::important[interaction]
+Drag the slider to increase the number of average colors. Specifically look at **Average Error** label.
+:::
+<ImageErrorWithNumber />
+
+Notice, how the average error between pixel colors drops drastically as the compressed image gets better!
+
+### Weights
+
+Okay, now that we can see the general strategy to quantify error works and aligns with how we saw differences in the images, we can apply it to an unintuitive scenario. Something we can't easily look at and tell if the compression is good or not: neural network weights.
+
+:::tip[think]
+What mechanisms inside a neural network would be affected if we changed the trained weights slightly?
+:::
 
 <!-- Furthermore, can we algorithmically say when an image  -->

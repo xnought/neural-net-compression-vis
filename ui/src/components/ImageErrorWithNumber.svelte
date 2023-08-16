@@ -8,6 +8,7 @@
 	export let width = 230;
 	export let showSlider = true;
 	export let height = 150;
+	let error = 0.0;
 	// actual 880 602
 
 	let canvasEl = {
@@ -35,6 +36,7 @@
 
 	function computeDiff(ctx, imageData, ogData) {
 		const diff = new Uint8ClampedArray(width * height * 4);
+		error = 0;
 		for (let g = 0; g < width * height * 4; g += 4) {
 			const R = Math.abs(imageData[g] - ogData[g]);
 			const G = Math.abs(imageData[g + 1] - ogData[g + 1]);
@@ -45,10 +47,12 @@
 			const normalized = totalDifference / maxDifference;
 			diff[g] = 255;
 			diff[g + 3] = Math.round(normalized * 255);
+			error += totalDifference;
 		}
 		const img = new ImageData(width, height, { colorSpace: "srgb" });
 		img.data.set(diff);
 		ctx.diff.putImageData(img, 0, 0);
+		error /= width * height;
 	}
 
 	let imageData, ogData;
@@ -102,7 +106,7 @@
 		</div>
 	</div>
 	<div>
-		<div class="label">Error</div>
+		<div class="label"><b>Average Error: {error.toFixed(2)}</b></div>
 		<canvas {width} {height} bind:this={canvasEl.diff} />
 	</div>
 </div>
