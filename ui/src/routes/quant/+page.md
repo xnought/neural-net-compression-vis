@@ -5,6 +5,7 @@ lastUpdate: August 2023
 
 <script>
     import KMeansImage from "../../components/KMeansImage.svelte";
+    import ImageError from "../../components/ImageError.svelte";
 </script>
 <style>
     img {
@@ -136,17 +137,20 @@ It is not a crazy leap to use the image example as an analog to the weights in a
 
 But there is a compressed elephant in the room.
 
-First, the weights are being multiplied with input numbers, then being multiplied by more weights, and so forth. Surely the error from one layer of weights would amplify, right? The model was trained on the real numbers, not the shared averages!
+How does the error between the compressed and original values affect the outputs? For images atleast its easy to see that the images looks similar, and therefore the compression at a certain level is tolerable.
 
-Now it's easy to see from the dog image that 128 colors represented the original image surprisingly well. But, if you had something you couldn't look at, how would you define how good/close the compression is to the original?
+But for other applications it's not so easy to tell whether some values are good or not.
 
-Together, we can come up with some error measurement so that we can see if a neural network would take well or be destroyed by quantization without looking at the results.
+So it may be helpful to quantify the error into a number. Visually this can be seen as the distance between the compressed value and the true original value.
 
--   [ ] Inspiration from the image example (show pixelwise error)
--   [ ] Matrix operator norm the error
--   [ ] Applying the error to a model
--   [ ] Using the error metric to do further training
--   [ ] Applying the results to a real model
--   [ ] Be done with it!
+For an image, we can clearly visualize the error in red where the values are most wrong.
+
+:::important[interaction]
+Drag the slider to increase the number of average colors. Specifically look at the error in red.
+:::
+
+<ImageError />
+
+As the compressed image gets better, the error becomes almost invisible!
 
 <!-- Furthermore, can we algorithmically say when an image  -->
