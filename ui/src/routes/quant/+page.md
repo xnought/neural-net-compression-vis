@@ -6,6 +6,7 @@ lastUpdate: August 2023
 <script>
     import KMeansImage from "../../components/KMeansImage.svelte";
     import ImageError from "../../components/ImageError.svelte";
+    import Math from "../../components/KaTeX.svelte";
 </script>
 <style>
     img {
@@ -152,5 +153,9 @@ Drag the slider to increase the number of average colors. Specifically look at t
 <ImageError />
 
 As the compressed image gets better, the error becomes almost invisible!
+
+How can we take the information and use one number to say the amount of error? Well, I could just sum up these errors, then I could divide by the total number from the original image.
+
+What is <Math text="\frac{1}{2}"/>?
 
 <!-- Furthermore, can we algorithmically say when an image  -->
