@@ -156,6 +156,8 @@ As the compressed image gets better, the error becomes almost invisible!
 
 How can we take the information and use one number to say the amount of error? Well, I could just sum up these errors, then I could divide by the total number from the original image.
 
-What is <Math text="\frac{1}{2}"/>?
+What is <Math text="\frac[1][2]"/>?
+
+<Math begin="align*" text="\sum_[i=1]" />
 
 <!-- Furthermore, can we algorithmically say when an image  -->
