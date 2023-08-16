@@ -53,7 +53,9 @@
 	let imageData, ogData;
 	onMount(async () => {
 		ctx.original = canvasEl.original.getContext("2d");
-		ctx.image = canvasEl.image.getContext("2d");
+		ctx.image = canvasEl.image.getContext("2d", {
+			willReadFrequently: true,
+		});
 		ctx.diff = canvasEl.diff.getContext("2d");
 
 		await Promise.allSettled([
@@ -66,12 +68,18 @@
 		});
 	});
 
-	$: if (ctx.diff && ogData) {
+	async function update(image) {
+		if (ctx.diff && ogData) {
+			await drawImage(ctx.image, image).then(() => {
+				imageData = ctx.image.getImageData(0, 0, width, height);
+				computeDiff(ctx, imageData.data, ogData.data);
+			});
+		}
+	}
+
+	$: {
 		image = images[selected];
-		drawImage(ctx.image, image).then(() => {
-			imageData = ctx.image.getImageData(0, 0, width, height);
-			computeDiff(ctx, imageData.data, ogData.data);
-		});
+		update(image);
 	}
 </script>
 
