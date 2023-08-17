@@ -184,4 +184,40 @@ Okay, now that we can see the general strategy to quantify error works and align
 What mechanisms inside a neural network would be affected if we changed the trained weights slightly?
 :::
 
+Let's break this apart together. For the vast majority of use cases, we have some prediction we want to make. This could be image classification or even probabilities over possible text tokens to finish a sentence.
+
+So if the output is changed, clearly we have a problem. What what changes the output?
+
+Well obviously the previous neural network layer. And what affects that neural network layer? Well, the layers before that!
+
+Okay, so then let's go to the initial layer that transforms the inputs.
+
+So what inside the layer is affected by our quantization of the weights?
+
+Although there are more intuitive explanation of what a neural network is doing, one easy way to represent the change is a linear transformation of the input space, followed by a non-linear function.
+
+We store these values in a weight matrix <Math text="W" /> and multiply it by the input vector <Math text="x" /> or <Math text="Wx" /> and typically apply some non-linear activation function like <Math text="\text[ReLU]\left(Wx\right)" />.
+
+So then what affects the non-linear output? Well, now we're simply left with the inside <Math text="Wx\tag[2]." big />
+
+Okay, well now we've quantized and compressed <Math text="W" /> into something different which I'll call <Math text="Q" /> for quantized.
+
+One potential way to quantify error would be to do the same method we did with the images. So compute the difference between <Math text="W" /> and <Math text="Q" />, then average it all up. However, that would ignore the meaning of what we're doing. We're transforming the input <Math text="x" /> into some output using matrix multiplication. So we want to take into account how multiplies and adds amplify our error.
+
+:::note
+It is also important to know how that error is then amplified again when it is input into the next layer of the neural network, but I'll ignore that complexity for now.
+
+Let's stick with how the linear transformation of the input is changed for now.
+:::
+
+So I can plainly measure the size of the error after the transformation is applied to the input vector <Math text="x" />. The <Math text="||x||" /> notation represents the size/norm of the vector. So I can write this error as <Math begin="align" text="\text[error] &=\frac[||Wx - Qx||][||Wx||]\nonumber\\&=\frac[||Wx - (W + \epsilon)x||][||Wx||]\tag[3]" big/> which just measures the deviation from the original transformation with <Math text="W" /> compared to <Math text="Q" />. That size of the deviation is the error we incur in the compression.
+
+:::note
+If I use the 1-norm, the representation <Math text="(3)" /> is equivalent to the <Math text="(1)" /> error formulation in the image example.
+:::
+
+<!-- Well, in fact, we know that the quantized weight matrix <Math text="Q" /> is some rough approximation of the original weight matrix <Math text="W" />. In turn, I can just represent <Math text="Q" /> as the error <Math text="\epsilon" /> plus the original weight matrix <Math text="W" /> or <Math text="Q = W + \epsilon.\tag[4]" big/> -->
+
+<!-- Then, I can simply do the same error calculation I did in the image section. So I can exactly quantify how much error is induced after -->
+
 <!-- Furthermore, can we algorithmically say when an image  -->

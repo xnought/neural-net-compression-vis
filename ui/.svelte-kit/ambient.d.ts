@@ -65,7 +65,6 @@ declare module '$env/static/private' {
 	export const PATH: string;
 	export const npm_config_argv: string;
 	export const _: string;
-	export const LaunchInstanceID: string;
 	export const npm_package_devDependencies__sveltepress_theme_default: string;
 	export const __CFBundleIdentifier: string;
 	export const USER_ZDOTDIR: string;
@@ -113,7 +112,6 @@ declare module '$env/static/private' {
 	export const LC_TERMINAL: string;
 	export const npm_config_init_version: string;
 	export const npm_config_ignore_optional: string;
-	export const SECURITYSESSIONID: string;
 	export const FIG_TERM: string;
 	export const COLORTERM: string;
 	export const npm_node_execpath: string;
@@ -187,7 +185,6 @@ declare module '$env/dynamic/private' {
 		PATH: string;
 		npm_config_argv: string;
 		_: string;
-		LaunchInstanceID: string;
 		npm_package_devDependencies__sveltepress_theme_default: string;
 		__CFBundleIdentifier: string;
 		USER_ZDOTDIR: string;
@@ -235,7 +232,6 @@ declare module '$env/dynamic/private' {
 		LC_TERMINAL: string;
 		npm_config_init_version: string;
 		npm_config_ignore_optional: string;
-		SECURITYSESSIONID: string;
 		FIG_TERM: string;
 		COLORTERM: string;
 		npm_node_execpath: string;
