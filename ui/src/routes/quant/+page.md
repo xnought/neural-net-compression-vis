@@ -210,16 +210,6 @@ It is also important to know how that error is then amplified again when it is i
 Let's stick with how the linear transformation of the input is changed for now.
 :::
 
-So I can plainly measure the size of the error after the transformation is applied to the input vector <Math text="x" />. The <Math text="||x||" /> notation represents the size/norm of the vector. So I can write this error as <Math begin="align" text="\text[error] &:=\frac[||Wx - Qx||][||Wx||]\nonumber\\& \ =\frac[||Wx - (W + \epsilon)x||][||Wx||]\tag[3]" big/> which just measures the deviation from the original transformation with <Math text="W" /> compared to <Math text="Q" />. That size of the deviation is the error we incur in the compression.
+So I can use the 1-norm induced operator norm on the difference between <Math text="W" /> and <Math text="Q" /> to see how the error is affected under matrix multiplication. In other words, I'm trying to measure how the error is accentuated by matrix multiplication as <Math text="\frac[||W-Q||][||W||]\tag[3]" big /> which is almost the same as <Math text="(1)" /> as the error between the image and the compressed.
 
-:::note
-If I use the 1-norm, the representation <Math text="(3)" /> is equivalent to the <Math text="(1)" /> error formulation in the image example.
-:::
-
-Let me go further, now what I'm looking for is a way to factor the <Math text="W" /> from the error so I have a term tells me what structure of the weights is worse for quantization. This is a tangent, but could be interesting.
-
-<!-- Well, in fact, we know that the quantized weight matrix <Math text="Q" /> is some rough approximation of the original weight matrix <Math text="W" />. In turn, I can just represent <Math text="Q" /> as the error <Math text="\epsilon" /> plus the original weight matrix <Math text="W" /> or <Math text="Q = W + \epsilon.\tag[4]" big/> -->
-
-<!-- Then, I can simply do the same error calculation I did in the image section. So I can exactly quantify how much error is induced after -->
-
-<!-- Furthermore, can we algorithmically say when an image  -->
+The larger the matrix multiplication exaggerates the pixel wise error, the worse off we are.
