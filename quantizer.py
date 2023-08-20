@@ -53,18 +53,18 @@ def quantize_linear_layer(layer, bits=8, dtype=torch.float32):
     num_biases = 1 if bias is None else bias.view(-1, 1).shape[0]
 
     # apply k-means if there are enough parameters
-    total_bits = 2**bits
+    total_bits = int(2**bits)
     new_weight = None
     new_bias = None
     if num_weights > total_bits:
-        w_codebook, w_indexes = quantize(weight, bits, dtype)
+        w_codebook, w_indexes = quantize(weight, total_bits, dtype)
         new_weight = QuantizedParams(w_indexes, w_codebook)
     else:
         # no quantization :(
         new_weight = RegularParams(weight)
 
     if bias is not None and num_biases > total_bits:
-        b_codebook, b_indexes = quantize(bias, bits, dtype)
+        b_codebook, b_indexes = quantize(bias, total_bits, dtype)
         new_bias = QuantizedParams(b_indexes, b_codebook)
     else:
         # no quantization :(
