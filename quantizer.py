@@ -5,8 +5,8 @@ import torch
 class QuantizedParams(torch.nn.Module):
     def __init__(self, indexes, codebook):
         super().__init__()
-        self.indexes = indexes
-        self.codebook = codebook
+        self.indexes = torch.nn.Parameter(indexes, requires_grad=False)
+        self.codebook = torch.nn.Parameter(codebook, requires_grad=False)
 
     def forward(self):
         return self.codebook[self.indexes.to(torch.int32)]
@@ -15,7 +15,7 @@ class QuantizedParams(torch.nn.Module):
 class RegularParams(torch.nn.Module):
     def __init__(self, weights):
         super().__init__()
-        self.weights = weights
+        self.weights = torch.nn.Parameter(weights, requires_grad=False)
 
     def forward(self):
         return self.weights
@@ -45,7 +45,7 @@ def quantize(weights, k=2, dtype=torch.float32):
 
 
 @torch.no_grad()
-def quantize_linear_layer(layer, k=8, dtype=torch.float32):
+def quantize_linear_layer(layer, bits=8, dtype=torch.float32):
     weight = layer.weight
     bias = layer.bias
 
@@ -53,22 +53,24 @@ def quantize_linear_layer(layer, k=8, dtype=torch.float32):
     num_biases = 1 if bias is None else bias.view(-1, 1).shape[0]
 
     # apply k-means if there are enough parameters
-    total_bits = 2**k
+    total_bits = 2**bits
     new_weight = None
     new_bias = None
     if num_weights > total_bits:
-        w_codebook, w_indexes = quantize(weight, k, dtype)
+        w_codebook, w_indexes = quantize(weight, bits, dtype)
         new_weight = QuantizedParams(w_indexes, w_codebook)
     else:
         # no quantization :(
         new_weight = RegularParams(weight)
 
     if bias is not None and num_biases > total_bits:
-        b_codebook, b_indexes = quantize(bias, k, dtype)
+        b_codebook, b_indexes = quantize(bias, bits, dtype)
         new_bias = QuantizedParams(b_indexes, b_codebook)
     else:
         # no quantization :(
-        new_bias = RegularParams(bias if bias is not None else 0.0)
+        new_bias = RegularParams(
+            bias if bias is not None else torch.tensor(0.0, dtype=dtype)
+        )
 
     return HybridLinear(new_weight, new_bias)
 
