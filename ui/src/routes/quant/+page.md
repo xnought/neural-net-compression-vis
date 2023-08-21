@@ -8,6 +8,7 @@ lastUpdate: August 2023
     import ImageError from "../../components/ImageError.svelte";
     import ImageErrorWithNumber from "../../components/ImageErrorWithNumber.svelte";
     import Math from "../../components/KaTeX.svelte";
+    import KMeansLive from "../../components/KMeansLive.svelte";
 </script>
 <style>
     img {
@@ -213,3 +214,11 @@ Let's stick with how the linear transformation of the input is changed for now.
 So I can use the 1-norm induced operator norm on the difference between <Math text="W" /> and <Math text="Q" /> to see how the error is affected under matrix multiplication. In other words, I'm trying to measure how the error is accentuated by matrix multiplication as <Math text="\frac[||W-Q||][||W||]\tag[3]" big /> which is almost the same as <Math text="(1)" /> as the error between the image and the compressed.
 
 The larger the matrix multiplication exaggerates the pixel wise error, the worse off we are.
+
+-   [ ] Have a rotation example in notebook
+-   [ ] Mockup visuals
+-   [ ] Have larger example with python tutorial using my code
+-   [ ] Resnet with tvm?
+-   [ ] If time permits add stable diffusion
+
+<KMeansLive />
