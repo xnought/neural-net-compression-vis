@@ -41,6 +41,7 @@ declare module '$env/static/private' {
 	export const npm_package_devDependencies__sveltepress_vite: string;
 	export const npm_config_init_license: string;
 	export const TERM_PROGRAM_VERSION: string;
+	export const npm_package_dependencies_ml_kmeans: string;
 	export const npm_package_scripts_dev: string;
 	export const ZDOTDIR: string;
 	export const ORIGINAL_XDG_CURRENT_DESKTOP: string;
@@ -163,6 +164,7 @@ declare module '$env/dynamic/private' {
 		npm_package_devDependencies__sveltepress_vite: string;
 		npm_config_init_license: string;
 		TERM_PROGRAM_VERSION: string;
+		npm_package_dependencies_ml_kmeans: string;
 		npm_package_scripts_dev: string;
 		ZDOTDIR: string;
 		ORIGINAL_XDG_CURRENT_DESKTOP: string;

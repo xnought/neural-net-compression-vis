@@ -1,10 +1,11 @@
 <script>
 	import { Tensor } from "./tensor";
+	import { kmeans } from "ml-kmeans";
 
 	const unif = Tensor.randu([10, 10]);
 
 	/**
-	 * Takes the tensor assuming 1D (n, 1) and computes iterations of k means
+	 * Takes the tensor assuming 1D (m, n) m*n and computes iterations of k means
 	 * with no fancy optimizations or initializations
 	 *
 	 * @todo add optimizations and initializations
@@ -12,9 +13,9 @@
 	 * @returns {{centroids: Tensor, assignments: Tensor}}
 	 */
 	function kMeans1D(t, nClusters = 8, maxIter = 300, tol = 1e-4) {
-		const n = t.shape[0];
+		const n = t.shape[0] * t.shape[1];
 		const centroids = Tensor.randu([nClusters, 1]);
-		const assignments = Tensor.zeros([n, 1], "u8");
+		const assignments = Tensor.zeros(t.shape, "u8");
 
 		function updateAssignments(t, centroids, assignments) {
 			for (let i = 0; i < n; i++) {
@@ -71,9 +72,33 @@
 		};
 	}
 
-	const { centroids, assignments } = kMeans1D(unif);
-	centroids.print();
-	assignments.print();
+	function tensorTo2D(t) {
+		const newarr = new Array(t.data.length);
+		for (let i = 0; i < t.data.length; i++) {
+			newarr[i] = [t.data[i]];
+		}
+		return newarr;
+	}
+	function quantize(params, bits = 5, useMyLib = false) {
+		if (bits > 8) throw Error();
+		if (useMyLib) {
+			const { centroids, assignments } = kMeans1D(params, 2 ** bits);
+			assignments.codebook = centroids;
+			return assignments;
+		} else {
+			const out = kmeans(tensorTo2D(params), 2 ** bits);
+			const assignments = Tensor.$(out.clusters, params.shape, "u8");
+			assignments.codebook = Tensor.$(out.centroids, [
+				out.centroids.length,
+				1,
+			]);
+			return assignments;
+		}
+	}
+
+	const out = quantize(unif, 2);
+	out.print();
+	out.codebook.print();
 </script>
 
 <div>k means live</div>
