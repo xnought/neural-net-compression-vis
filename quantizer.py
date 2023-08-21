@@ -1,5 +1,6 @@
 from sklearn.cluster import MiniBatchKMeans
 import torch
+import tqdm
 
 
 class QuantizedParams(torch.nn.Module):
@@ -84,8 +85,24 @@ def traverse_named_modules(m, filter="Linear"):
             yield parent, child, l
 
 
-# for p, c, l in traverse_named_modules(pipe.unet):
-#     q_w = RegularParams(l.weight)
-#     q_b = RegularParams(0.0 if l.bias is None else l.bias)
-#     replace = HybridLinear(q_w, q_b, in_features=l.in_features, out_features=l.out_features)
-#     setattr(pipe.unet.get_submodule(p), c, replace)
+def traverse_named_modules(m, filter="Linear"):
+    for name, l in m.named_modules():
+        if type(l).__name__ == filter:
+            sep_name = name.split(".")
+            parent = ".".join(sep_name[:-1])
+            child = sep_name[-1]
+            yield parent, child, l
+
+
+def replace(model, filter, callback):
+    modules = list(traverse_named_modules(model, filter))
+    for p, c, l in tqdm.tqdm(modules, total=len(modules)):
+        setattr(model.get_submodule(p), c, callback(p, c, l))
+
+
+def replace_linear_with_quantized(model, bits=8, dtype=torch.float16):
+    replace(
+        model,
+        "Linear",
+        lambda p, c, l: quantize_linear_layer(l, bits=bits, dtype=dtype),
+    )
