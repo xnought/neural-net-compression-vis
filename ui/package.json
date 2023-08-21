@@ -19,6 +19,7 @@
   "type": "module",
   "license": "MIT",
   "dependencies": {
+    "@observablehq/plot": "^0.6.10",
     "katex": "^0.16.8",
     "ml-kmeans": "^6.0.0"
   }

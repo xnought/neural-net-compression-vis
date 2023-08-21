@@ -30,6 +30,7 @@ declare module '$env/static/private' {
 	export const FIG_PID: string;
 	export const TERM_PROGRAM: string;
 	export const NODE: string;
+	export const npm_package_dependencies__observablehq_plot: string;
 	export const INIT_CWD: string;
 	export const _P9K_TTY: string;
 	export const npm_config_version_git_tag: string;
@@ -153,6 +154,7 @@ declare module '$env/dynamic/private' {
 		FIG_PID: string;
 		TERM_PROGRAM: string;
 		NODE: string;
+		npm_package_dependencies__observablehq_plot: string;
 		INIT_CWD: string;
 		_P9K_TTY: string;
 		npm_config_version_git_tag: string;
