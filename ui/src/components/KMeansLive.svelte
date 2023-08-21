@@ -2,8 +2,9 @@
 	import { Tensor } from "./tensor";
 	import { quantize } from "./kmeans";
 	import Heatmap from "./Heatmap.svelte";
+	import Dist from "./Dist.svelte";
 
-	const m = 10,
+	const m = 30,
 		n = 10;
 	const dataOptions = {
 		uniform: () => Tensor.randu([m, n]),
@@ -33,12 +34,18 @@
 	{/each}
 </select>
 
-<input type="range" min="1" max="5" bind:value={bits} />
+<input type="range" min="1" max="8" bind:value={bits} />
 {bits} bits
 <Heatmap
 	data={data.data}
 	data2={reconstructFromCodebook(quant).data}
 	shape={[m, n]}
+/>
+<Dist
+	data={data.data}
+	data2={reconstructFromCodebook(quant).data}
+	shape={[m, n]}
+	height={200}
 />
 
 <style>

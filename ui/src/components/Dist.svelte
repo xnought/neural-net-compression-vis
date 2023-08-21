@@ -32,30 +32,28 @@
 			let d = toJson(data, shape);
 			if (data2) {
 				d = d.concat(toJson(data2, shape, "Quantized Weights"));
+				// d = toJson(data2, shape, "Quantized Weights");
 			}
 			div?.append(
 				Plot.plot({
-					padding: 0,
-					grid: true,
-					x: { axis: null, label: "Columns", inset: 30 },
-					y: { axis: null, label: "Rows" },
+					facet: { label: null },
+					y: { grid: true },
 					color: {
+						style: "background:none;",
 						type: "linear",
 						scheme: "RdBu",
-						legend: true,
-						style: "background:none;",
 					},
 					marks: [
-						Plot.cell(d, {
-							x: "i",
-							y: "j",
-							fx: "label",
-							fill: "weight",
-							inset: 0.5,
-						}),
+						Plot.rectY(
+							d,
+							Plot.binX(
+								{ y: "count" },
+								{ x: "weight", fx: "label", fill: "weight" }
+							)
+						),
+						Plot.ruleY([0]),
 					],
 					...settings,
-					facet: { label: null },
 				})
 			);
 		}
