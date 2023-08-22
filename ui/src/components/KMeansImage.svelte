@@ -1,5 +1,5 @@
 <script>
-	const images = [1, 2, 4, 8, 16, 32, 64, 128].map((x) => `${x}.png`);
+	const images = [1, 2, 4, 8, 16, 32, 64, 128, 256].map((x) => `${x}.png`);
 	export let selected = 2;
 	export let width = 300;
 	export let showSlider = false;
@@ -11,7 +11,7 @@
 {/if}
 <div id="kmeans-container">
 	<div id="k">
-		<div class="label">Compressed: Averages</div>
+		<div class="label">Compressed</div>
 		<div>
 			<img
 				id="compressed"
@@ -19,12 +19,20 @@
 				style="width: {width}px;"
 			/>
 		</div>
+		<div class="label">
+			{#if selected === 0}
+				{2 ** selected} color
+			{:else}
+				{2 ** selected} colors
+			{/if}
+		</div>
 	</div>
 	<div id="og">
 		<div class="label">Original</div>
 		<div>
 			<img id="original" src="dog.png" style="width: {width}px;" />
 		</div>
+		<div class="label">4,824,160 colors</div>
 	</div>
 </div>
 

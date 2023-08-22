@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 
 	const original = "dog.png";
-	const images = [1, 2, 4, 8, 16, 32, 64, 128].map((x) => `${x}.png`);
+	const images = [1, 2, 4, 8, 16, 32, 64, 128, 256].map((x) => `${x}.png`);
 	export let selected = 0;
 	let image = images[selected];
 	export let width = 230;

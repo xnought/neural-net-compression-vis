@@ -1,5 +1,5 @@
 ---
-title: On Model Quantization Error
+title: On Compressing Weights
 lastUpdate: August 2023
 ---
 
@@ -21,6 +21,10 @@ lastUpdate: August 2023
         margin: 0;
         color: grey;
     }
+    .center {
+        display: flex;
+        justify-content:center;
+    }
 
     .thumb {
         height: 100%;
@@ -41,97 +45,84 @@ lastUpdate: August 2023
     }
 </style>
 
-Visualizing how error can crop up in a type of sharing quantization. Specifically analyzing the condition number after quantization of weight tensors.
+How does compressing your neural network weights change the outputs? This article attempts to build up a good way to think about model compression and the fundamental operations that are affected. From as close to first principles logic as possible.
 
-<!-- ## My Plan
+## Big indeed
 
--   [x] Explain the problem as fundamentally and simply as possible
--   [ ] Explain how we can save a ton of space by sharing colors/weights
--   [ ] Have a cool webcam example of live k-means weight sharing
--   [ ] Yes massive space savings, but how does the affect key operations? Is there something to be said about the matrix itself?
--   [ ] Deriving condition number specifically after k-means quantization and putting a number to the error
--   [ ] Specifically honing in on attention mechanism for quantization -->
-
-## Bigger is not always better
-
-Modern neural networks are really freaking cool. For example, with [Stable Diffusion](https://stability.ai/stablediffusion), you can generate your own [anime waifu](https://github.com/harubaru/waifu-diffusion). Enough said, clearly you are already convinced.
+Modern deep learning is quite extraordinary. I don't need to convince you, you've probably seen the latest generative art models and other incredible models that blow your socks off.
 
 <div style="background-image: url(taller.png);height: 50px;" class="thumb"/>
 
 _From [Lexica](https://lexica.art/?q=34e00886-6b4f-47fe-a9b9-9f4e630bbb28)'s Aperture Model._
 
-Joking aside, the detail and creativity is beautiful with no exaggeration. But there is also a beauty to the thing itself. The neural networks that generate such art have hundreds of millions or even billions of tunable knobs that are interconnected in such a way to create something meaningful.
+The funny thing is that these networks are just transforming the inputs over and over again until a desirable output. To create really complex outputs (like generative art), you thus need a reasonable amount of transformations. So it's not at all surprising that models like [Stable Diffusion XL](https://stability.ai/stablediffusion) have over 3 billion weights!
 
-The awesomeness of so many parameters unfortunately has its downsides. Namely, you need expensive computers to run these large models. There are so many parameters that the model may not even fit in your computer's memory[^1]. And even if it can fit, you might wait your entire lifetime just to do one generation. Too damn slow!
+Likely the average consumer (you and me) can't run these models on our computers alone. They just won't fit in RAM, and even if they do, it might take a century to produce one generation.
 
-[^1]: For example the new cool models of today like [Llama2](https://huggingface.co/docs/transformers/main/model_doc/llama2) needs > 100 GB ram just to fit.
+Luckily, there are strategies to cope with the size. Namely, model quantization: the act of converting floating point weights into small integers. With quantization you can reasonably reduce the model size by 4x or more.
 
-So, to actually run these models on your hardware, smart people have developed [quantization](https://pytorch.org/docs/stable/quantization.html) techniques to make the models smaller. The main point: reduce the number of floating point numbers[^2] you store and use.
+If the outputs of the model aren't changed too much, the compression is a total win! Now more people can run these incredible models!
 
-[^2]: Formats to store decimal numbers. Aka, not integers. 32 or 16 bit floating point. See [here](https://www.wikiwand.com/en/Floating-point_arithmetic) for more info.
+## Sharing
 
-Can we use an extremely simple techniques to reduce the model size drastically? Furthermore, how can we compress without killing the magic. Let's try!
+Suppose you owned 20 dogs. An army of golden retrievers. And also suppose you are on the market for dog toys.
 
-## Sharing is caring
+Should you buy 20 toys for all 20 dogs? That would be quite expensive! If we clock each toy at 20$, then you'd pay 400$.
 
-Why would we buy 20 toys for 20 dogs when we could just buy 5? Not all the toys are in use all the time. Furthermore, their may be fun in sharing the toy with a dograde (comrade, but dog). Instead of buying 20 toys at 20 dollars each, 400 dollars total, I'll just buy 5 for 100 dollars total! A 4x savings!
+Or you could reason that buying 5 toys would be fine. Not all 20 dogs are playing with their toy at once. They could share! Now your bill would only be 100$.
 
-Now, there may be downsides of 5 toys. Certain dogs may rip toys up to shreds, or some dogs may be left behind with no toys. Darn the alphas! Instead of saving you may spiral into madness. This is not fair in our dog democracy.
+The basic principle is that sharing may be good enough under constraints.
 
-This tradeoff can be easily seen in a simple example of trying to make images smaller. Let's see.
+## Sharing Image Pixels
 
-For example, I'll start with a 880 pixels wide by 602 pixels tall image of this cutest golden retriever you've ever seen.
+How can sharing be applied to reduce image size? Images are represented pretty closely to neural networks, so this is a tangent, but in a way it's not. Pay attention these intuitions will be helpful!
+
+As you know, images are made up of tons of small colored squares: pixels. I'll start with a 880 pixels wide by 602 pixels tall image of this cutest golden retriever you've ever seen.
 
 <img src="dog.png" style="width: 300px;">
 
-For this image, there are 880 times 602 pixels which totals to 4,864,160 pixels. There are three colors that represent each pixel: red, green, and blue. So in total there are 4,864,160 \* 3 = 14,592,480 numbers we store for that image. Each color is represented by a number from 0 to 255 or just one unsigned 8 bit integer: one byte. So this image has 14,592,480 bytes, or ~14 mega bytes.
+If I had enough time, I could count how many pixels there are and find there are almost five million! Or if I just remembered how to multiply, I'd multiply the width times the height to get the total number as <Math text="808 \cdot 602 = 4,824,160"/> pixels, which is just under five million pixels. Ah whatever, I'm in a rounding mood.
 
-That's a lot of bytes!
+Remember, each pixel is one color. And each color is represented by three numbers: <span style="color: rgb(255, 0, 0)">red</span>, <span style="color: rgb(0, 255, 0)">green</span>, and <span style="color: rgb(0, 0, 255)">blue</span>. So if there are around five million pixels and each pixel has three numbers, than in total there are about 15 million numbers in that image[^1].
+
+[^1]: I'm ignoring opacity alpha values.
 
 :::tip[think]
-How much data can we remove so that the image still looks like a dog?  
+How can we apply sharing to the pixels?
 :::
 
-One powerful intuition is using averages as the sharing mechanism.
-
-You may ask yourself: what is the average color of the image? Perhaps that would leave us with the most important single color. Instead of 4,864,160 colors, I would then just store 1 color. Its like if all the pixels are sharing one color.
+In order to share the pixels, we need to constrain them into a few important ones. Getting one color is easy. We can just take the average over all the pixels to get the most important color. Then, I can assign each pixel one number that indexes into my shared colors. In this case there is only one.
 
 <KMeansImage selected={0}/>
 
-You will not be surprised to know that one color isn't useful. We've lost the dog! It looks nothing like the original! But, the averaged color isn't completely out of left field. It seems to have captured the average of the dogs color, table, and background.
-
-What if we increase the number of average colors to compute? How about we now store two averages? Would that look more like the image?
+Now, what if I want two colors? In other words, if all the pixels could only share the two colors, what would the image look like?
 
 <KMeansImage selected={1}/>
 
-That is starting to look like a dog! Let's continue to see how close we get to the original!
+That is starting to look like a dog!
 
-:::important[interaction]
-Keep on increasing the number of average colors to compute by dragging the slider below.
+:::important[your turn]
+Drag the slider to increase the number of colors to share. When does the image start to look like the original?
 :::
 
-<KMeansImage selected={2} showSlider/>
+<KMeansImage selected={1} showSlider/>
 
-Instead of 4,864,160 colors for the original image, we only store 128 colors now.
+128 colors looks mighty close to the original image!
 
-Each pixel still needs to reference which of the 128 colors to use. So we still need to keep one byte per each pixel. Then when you need to access the pixel, you can use the number to index into the 128 colors.
+To convert these savings to actual usable numbers, I can quickly compute each file size.
 
-To tally the space savings now, for the compressed image we store one number per pixel plus the 128 average colors which totals to 128\*3 + 4,864,160 = 4,864,544 bytes.
+Remember, each pixel still needs to reference which of the 128 colors to use for the quantized version. So we still need to keep one byte per each pixel. Then when you need to access the pixel, you can use the number to index into the 128 colors.
 
-Compared to the original of 14,592,480 bytes that is ~3 times smaller!
+So each shared color still has three number that represents the number and then one number per pixel to index into that codebook gives us <Math text="128 \cdot 3 \cdot 4824160=4824544" /> or 4,824,544 bytes.
+
+Now the original was roughly 15 million numbers (and in this case bytes). That is a 3x space savings and the images look almost the same!
 
 :::note
 I've left out some information on how to compute these multiple averages.
 
 **For the purposes of this article, you can ignore how I compute the averages.**
 
-However, if you must know I use the [k-means algorithm](https://k-means-explorable.vercel.app/) on the image pixels to select out the top k average colors and assign each pixel one of those k colors.
-
-For example, for the top k=4 colors, I run the k-means algorithm which locates 4 "centroids" which are rough centers in the color data: 4 averages. Then, I can go through each pixel and see which average (centroid) is closest to that color and assign it that average color.
-
-So each pixel can be represented by a single byte 0, 1, 2, or 3 which then references one of the average colors we computed.
-
-We are sharing colors!
+However, if you must know I use the [k-means algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) on the image pixels to select out the top k average colors and assign each pixel one of those k colors.
 :::
 
 ## Err on the side of Error
