@@ -94,7 +94,7 @@
 {/if}
 <div id="kmeans-container">
 	<div id="k">
-		<div class="label">Compressed: Averages</div>
+		<div class="label">Compressed</div>
 		<div>
 			<canvas {width} {height} bind:this={canvasEl.image} />
 		</div>

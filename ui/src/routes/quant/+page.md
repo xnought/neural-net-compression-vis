@@ -125,50 +125,47 @@ I've left out some information on how to compute these multiple averages.
 However, if you must know I use the [k-means algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) on the image pixels to select out the top k average colors and assign each pixel one of those k colors.
 :::
 
-## Err on the side of Error
+## Humans are too good
 
-It is not a crazy leap to use the image example as an analog to the weights in a neural network. Instead of color sharing, we can do weight sharing! Representing the floating point numbers as small integers that index into the top averages. It would massively compress these models! Potentially a 4x savings (from f32 to u8).
+At what point did you think that the quantized image looked close to the original? Answering for myself, it just looked closer to the original. What does that really mean?
 
-But there is a compressed elephant in the room.
+Do you see the issue? If we plan to apply these quantization methods to neural network weights, how do we know when to stop or even if we should quantize at all?
 
-How does the error between the compressed and original values affect the outputs? For images atleast its easy to see that the images looks similar, and therefore the compression at a certain level is tolerable.
+First off, quantizing and compressing stuff depends on the usecase of whatever you're compressing. In the image case, it needed to look indistinguishable from the original to humans.
 
-### Images
-
-But for other applications it's not so easy to tell whether some values are good or not.
-
-So it may be helpful to quantify the error into a number. Visually this can be seen as the distance between the compressed value and the true original value.
-
-For an image, we can clearly visualize the pixel-wise error in red. Basically, where the compressed image is different from the original.
-
-:::important[interaction]
-Drag the slider to increase the number of average colors. Specifically look at the places with deep red to see the most error.
+:::tip[think]
+What is the usecase of weights in neural networks? How would quantization affect them?
 :::
 
-<ImageError />
+## Assigning a number to error
 
-As the compressed image gets better, the error becomes almost invisible!
+Before we get to the heart of the issue, I'll quickly show you what an error metric may look like for the image case.
 
-In other words, for each pixel at (location <Math text="i" />) I find the difference between the color channels of the compressed <Math text="\hat[A]" /> and the original <Math text="A" />. For example if the compressed color was [0,0,0] white and the original color was [255,255,255] black the summed error would be |255-0| + |255-0| + |255-0| or {255\*3} for that pixel. This would be an example of the maximum amount of error (pixel should have been black, but the compressed is white).
+I could assume that I as a human see the error when the colors diverge greatly from the original image.
 
-:::note
-I store all these errors for all the pixels in an error matrix <Math text="E"/> defined by <Math text="D_[i] = \sum_[c=1]^[3] |A_[i, c] - \hat[A]_[i,c]| \tag{1}" big /> (exactly what I just said before)
-which is displayed above as the error in red.
+So I could find the absolute difference between the compressed and original pixels. Then visualize places where the error is still high. Furthermore, I can compress the error values into one number with an average.
 
-The closer the sum is to completely wrong the closer it is 255\*3 which is the gap between white and black.
-
-Then, I can very easily compress the pixel error <Math text="D" /> in <Math text="(1)" /> into an average error <Math text="\frac[1][N]\sum_[i=1]^[N] D_[i]" /> where <Math text="N" /> is the total number of pixels.
-
+:::important[your turn]
+Drag the slider increase the number of colors quantized. Observe the places with high error.  
 :::
 
-:::important[interaction]
-Drag the slider to increase the number of average colors. Specifically look at **Average Error** label.
-:::
 <ImageErrorWithNumber />
 
-Notice, how the average error between pixel colors drops drastically as the compressed image gets better!
+As the **Average Error** decreases (which is the average deviation from the original pixel color), we see the error image virtually disappears.
 
-### Weights
+So as long as we attach a meaningful number to the error, we can decide when it's a good idea, and how to improve our methods to quantize/compress better.
+
+But you must keep in mind the original usecase/application like we've done here with the image!
+
+:::note
+In other words, for each pixel at (location <Math text="i" />) I find the difference between the corresponding color channels of the compressed/quantized image <Math text="C" /> and the original image <Math text="O" />. For example if the compressed color was [0,0,0] white and the original color was [255,255,255] black the summed error would be |255-0| + |255-0| + |255-0| or {255\*3} for that pixel. This would be an example of the maximum amount of error (pixel should have been black, but the compressed is white).
+
+I store all these errors for all the pixels in an error matrix <Math text="E"/> defined by <Math text="E_[i] = \sum_[c=1]^[3] |C_[i, c] - O_[i,c]| \tag{1}" big /> where <Math text="i" /> is the pixel index and <Math text="c"/> is the color channel index.
+
+This error image <Math text="E" /> is what you see in red above. Then I simply average over these values to get the **Average Error**.
+:::
+
+## Neural Network Weights
 
 Okay, now that we can see the general strategy to quantify error works and aligns with how we saw differences in the images, we can apply it to an unintuitive scenario. Something we can't easily look at and tell if the compression is good or not: neural network weights.
 
