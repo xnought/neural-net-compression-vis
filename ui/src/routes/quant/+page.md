@@ -167,6 +167,39 @@ This error image <Math text="E" /> is what you see in red above. Then I simply a
 
 ## Neural Network Weights
 
+So then, do you come up with an answer? What determines whether the quantization on neural network[^2] weights is good or bad?
+
+[^2]: I'm assuming a vanilla neural network with nothing fancy.
+
+In my way of thinking, we must first see what a neural network is doing. Ultimately I really care about whether the output is good or not.
+
+So is it that easy, do we quantize the weights, then compute metrics for the model to see if its still usable?
+
+Well, yeah.
+
+But how can we get a deeper intuition other than with validation testing comparison with the original network?
+
+First we must ask what then affects the output?
+
+SO, what affects the output? Well, the previous neural network layer. And what makes up a layer in a regular neural network? A linear layer with a non-linearity. So what's in the linear layer? A weight matrix multiplied by the input with a bias added elementwise.
+
+This line of reasoning is nothing crazy. To put this in math notation, if I had a three layer neural network where the first two layers had ReLU activations and the last was just linear, I'd have
+
+<Math text="\text[ReLU]\left(\text[ReLU]\left(xW_1^T + b_1\right)W_2^T + b_2\right)W_3^T + b_3.\tag[2]" big/>
+
+Although other operations will end up changing the numbers, the matrix multiplication must first be satisfied as something that doesn't totally spiral the error out of control.
+
+:::tip[think]
+How can I quantify error with respect to how the weight matrix is used? In other words, how can I quantify error with respect to the matrix multiplication? If I could assign a error number to a quantized weight matrix, I could then get an intuition for what types of weights/structure/patterns are fine and ones that lead to problems.
+:::
+
+-   [ ] Matrix operator norm
+-   [ ] Error computation
+-   [ ] Error on different distributions of weights
+-   [ ] Compress autoencoder trained via pytorch
+
+<!-- ## \_
+
 Okay, now that we can see the general strategy to quantify error works and aligns with how we saw differences in the images, we can apply it to an unintuitive scenario. Something we can't easily look at and tell if the compression is good or not: neural network weights.
 
 :::tip[think]
@@ -209,4 +242,4 @@ The larger the matrix multiplication exaggerates the pixel wise error, the worse
 -   [ ] Resnet with tvm?
 -   [ ] If time permits add stable diffusion
 
-<KMeansLive />
+<KMeansLive /> -->

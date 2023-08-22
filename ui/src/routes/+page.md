@@ -1,7 +1,7 @@
 ---
-title: Entropic
+title: _
 heroImage: /logo.png
-tagline: Deriving Ideas from Scratch with Visualizations
+tagline: Under the underscore
 actions:
     - label: View Articles
       type: primary
