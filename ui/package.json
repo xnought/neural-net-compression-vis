@@ -1,27 +1,29 @@
 {
-  "name": "ui",
-  "private": true,
-  "version": "0.0.0",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build"
-  },
-  "devDependencies": {
-    "@sveltejs/adapter-static": "^2.0.2",
-    "@sveltejs/kit": "^1.22.3",
-    "@sveltepress/theme-default": "^1.18.1",
-    "@sveltepress/vite": "^0.27.1",
-    "@types/node": "^20.4.2",
-    "svelte": "^4.0.5",
-    "svelte-distill": "^0.0.11",
-    "vite": "^4.4.3"
-  },
-  "type": "module",
-  "license": "MIT",
-  "dependencies": {
-    "@observablehq/plot": "^0.6.10",
-    "d3": "^7.8.5",
-    "katex": "^0.16.8",
-    "ml-kmeans": "^6.0.0"
-  }
+	"name": "ui",
+	"private": true,
+	"version": "0.0.0",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"deploy": "gh-pages -d dist"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-static": "^2.0.2",
+		"@sveltejs/kit": "^1.22.3",
+		"@sveltepress/theme-default": "^1.18.1",
+		"@sveltepress/vite": "^0.27.1",
+		"@types/node": "^20.4.2",
+		"gh-pages": "^6.0.0",
+		"svelte": "^4.0.5",
+		"svelte-distill": "^0.0.11",
+		"vite": "^4.4.3"
+	},
+	"type": "module",
+	"license": "MIT",
+	"dependencies": {
+		"@observablehq/plot": "^0.6.10",
+		"d3": "^7.8.5",
+		"katex": "^0.16.8",
+		"ml-kmeans": "^6.0.0"
+	}
 }
