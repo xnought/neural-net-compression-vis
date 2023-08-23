@@ -1,11 +1,11 @@
 ---
 title: _
-heroImage: /logo.png
+heroImage: logo.png
 tagline: Under the underscore
 actions:
     - label: View Articles
       type: primary
-      to: /quant
+      to: quant
       external: true
 # features:
 #     - title: Markdown centered
