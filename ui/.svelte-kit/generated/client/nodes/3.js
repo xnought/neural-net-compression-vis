@@ -1,1 +1,1 @@
-export { default as component } from "../../../../src/routes/quant/+page.md";
+export { default as component } from "../../../../src/routes/+page.md";

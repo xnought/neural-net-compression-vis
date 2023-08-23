@@ -6,12 +6,6 @@ const config = defineConfig({
 	plugins: [
 		sveltepress({
 			theme: defaultTheme({
-				// themeColor: {
-				// 	gradient: {
-				// 		start: "blue",
-				// 		end: "#2A80C1",
-				// 	},
-				// },
 				navbar: [
 					// Add your navbar configs here
 				],
