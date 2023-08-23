@@ -18,14 +18,14 @@ const config = defineConfig({
 							items: [
 								{
 									title: "Quantization",
-									to: "/quant",
+									to: "quant",
 								},
 							],
 						},
 					],
 				},
-				github: "https://github.com/xnought/entropic",
-				logo: "/logo.png",
+				github: "https://github.com/xnought/docs",
+				logo: "logo.png",
 			}),
 			siteConfig: {
 				title: "_",
