@@ -100,6 +100,7 @@ declare module '$env/static/private' {
 	export const npm_config_version_git_message: string;
 	export const ITERM_SESSION_ID: string;
 	export const FIG_SET_PARENT: string;
+	export const npm_package_dependencies_d3: string;
 	export const LOGNAME: string;
 	export const LESS: string;
 	export const YARN_WRAP_OUTPUT: string;
@@ -224,6 +225,7 @@ declare module '$env/dynamic/private' {
 		npm_config_version_git_message: string;
 		ITERM_SESSION_ID: string;
 		FIG_SET_PARENT: string;
+		npm_package_dependencies_d3: string;
 		LOGNAME: string;
 		LESS: string;
 		YARN_WRAP_OUTPUT: string;
