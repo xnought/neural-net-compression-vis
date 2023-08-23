@@ -5,7 +5,7 @@ tagline: Under the underscore
 actions:
     - label: View Articles
       type: primary
-      to: quant
+      to: docs/quant
       external: true
 # features:
 #     - title: Markdown centered

@@ -8,6 +8,22 @@ sed -i '' 's/_app/app/g' *.html
 # replace all "/ with "
 sed -i '' 's/"\//"/g' *.html
 
+# # into app immtuable
+# cd app/immutable
+
+# cd chunks
+# sed -i '' 's/"\//"/g' *.js
+# cd ..
+# cd entry
+# sed -i '' 's/"\//"/g' *.js
+# cd ..
+# cd nodes
+# sed -i '' 's/"\//"/g' *.js
+# cd ..
+
+# #out of app/immutable
+# cd ..
+# cd .. 
 
 cd ..
 yarn deploy
