@@ -18,7 +18,7 @@ const config = defineConfig({
 							items: [
 								{
 									title: "Quantization",
-									to: "docs/quant",
+									to: "quant",
 								},
 							],
 						},
