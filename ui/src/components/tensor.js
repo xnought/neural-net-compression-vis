@@ -1,5 +1,3 @@
-// import { GPU } from "gpu.js";
-
 const TypedArrays = {
 	f32: Float32Array,
 	u8: Uint8Array,
@@ -89,6 +87,42 @@ class Tensor {
 		t.codebook = this.codebook;
 		return t;
 	}
+	deepCopy() {
+		const t = new Tensor(
+			deepCopyArray(this.data, TypedArrays[this.dtype]),
+			deepCopyArray(this.shape, Array),
+			this.dtype
+		);
+		return t;
+	}
+	self(copy) {
+		return copy ? this.deepCopy() : this;
+	}
+	sub(other, copy = false) {
+		const _this = this.self(copy);
+
+		// broadcast over other
+		let tempOtherStrides = [other.strides[0], other.strides[1]];
+		if (_this.shape[0] > other.shape[0]) {
+			other.strides[0] = 0;
+		}
+		if (_this.shape[1] > other.shape[1]) {
+			other.strides[1] = 0;
+		}
+
+		// element wise add
+		for (let i = 0; i < _this.shape[0]; i++) {
+			for (let j = 0; j < _this.shape[1]; j++) {
+				_this.data[_this.index2D(i, j)] -= other.value2D(i, j);
+			}
+		}
+
+		// reset broadcast
+		other.strides[0] = tempOtherStrides[0];
+		other.strides[1] = tempOtherStrides[1];
+
+		return _this;
+	}
 	add(other) {
 		// broadcast over other
 		let tempOtherStrides = [other.strides[0], other.strides[1]];
@@ -143,84 +177,6 @@ class Tensor {
 
 		return out;
 	}
-	// codebookmatmulgpu(other) {
-	// 	assert(
-	// 		this.shape[1] === other.shape[0],
-	// 		"must have same inner dimensions"
-	// 	);
-	// 	const gpu = new GPU({ mode: "webgl2" });
-	// 	let a = this;
-	// 	let b = other;
-	// 	const tensorConstants = {
-	// 		aShape: a.shape,
-	// 		bShape: b.shape,
-	// 		aStrides: a.strides,
-	// 		bStrides: b.strides,
-	// 		aCodebook: a.codebook.data,
-	// 		bCodebook: b.codebook.data,
-	// 	};
-	// 	const settings = {
-	// 		constants: tensorConstants,
-	// 		output: [a.shape[0] * b.shape[1]],
-	// 	};
-	// 	const multiplyMatrix = gpu.createKernel(function (a, b) {
-	// 		let sum = 0;
-	// 		for (var k = 0; k < this.constants.aShape[1]; k++) {
-	// 			const aIndex =
-	// 				this.thread.y * this.constants.aStrides[0] +
-	// 				k * this.constants.aStrides[1];
-	// 			const bIndex =
-	// 				k * this.constants.bStrides[0] +
-	// 				this.thread.x * this.constants.bStrides[1];
-	// 			sum +=
-	// 				this.constants.aCodebook[a[aIndex]] *
-	// 				this.constants.bCodebook[b[bIndex]];
-	// 		}
-	// 		return sum;
-	// 	}, settings);
-
-	// 	const out = multiplyMatrix(a.data, b.data);
-	// 	const c = new Tensor(out, [a.shape[0], b.shape[1]], "f32");
-	// 	gpu.destroy();
-	// 	return c;
-	// }
-	// matmulgpu(other) {
-	// 	assert(
-	// 		this.shape[1] === other.shape[0],
-	// 		"must have same inner dimensions"
-	// 	);
-	// 	const gpu = new GPU({ mode: "webgl2" });
-	// 	let a = this;
-	// 	let b = other;
-	// 	const tensorConstants = {
-	// 		aShape: a.shape,
-	// 		bShape: b.shape,
-	// 		aStrides: a.strides,
-	// 		bStrides: b.strides,
-	// 	};
-	// 	const settings = {
-	// 		constants: tensorConstants,
-	// 		output: [a.shape[0] * b.shape[1]],
-	// 	};
-	// 	const multiplyMatrix = gpu.createKernel(function (a, b) {
-	// 		let sum = 0;
-	// 		for (var k = 0; k < this.constants.aShape[1]; k++) {
-	// 			const aIndex =
-	// 				this.thread.y * this.constants.aStrides[0] +
-	// 				k * this.constants.aStrides[1];
-	// 			const bIndex =
-	// 				k * this.constants.bStrides[0] +
-	// 				this.thread.x * this.constants.bStrides[1];
-	// 			sum += a[aIndex] * b[bIndex];
-	// 		}
-	// 		return sum;
-	// 	}, settings);
-
-	// 	const out = multiplyMatrix(a.data, b.data);
-	// 	const c = new Tensor(out, [a.shape[0], b.shape[1]], "f32");
-	// 	gpu.destroy();
-	// 	return c;
-	// }
 
 	static zeros(shape, dtype) {
 		return new Tensor(Array(shape[0] * shape[1]).fill(0), shape, dtype);
@@ -235,7 +191,7 @@ class Tensor {
 	static randu(shape, dtype = "f32") {
 		let data = new Array(shape[0] * shape[1]);
 		for (let i = 0; i < data.length; i++) {
-			data[i] = Math.random();
+			data[i] = Math.random() - 0.5;
 		}
 		return new Tensor(data, shape, dtype);
 	}
@@ -258,12 +214,31 @@ class Tensor {
 		assert(dtype in TypedArrays, `type must be f32 or u8`);
 		return new Tensor(new TypedArrays[dtype](data), shape, dtype);
 	}
+	reconstruct() {
+		const reconstructed = Tensor.zeros([this.shape[0], this.shape[1]]);
+		for (let i = 0; i < this.shape[0]; i++) {
+			for (let j = 0; j < this.shape[1]; j++) {
+				reconstructed.data[reconstructed.index2D(i, j)] = this.value2D(
+					i,
+					j
+				);
+			}
+		}
+		return reconstructed;
+	}
 }
 
 function assert(rule, msg = "") {
 	if (!rule) {
 		throw Error(msg);
 	}
+}
+function deepCopyArray(array, ArrayConstructor) {
+	const cpy = new ArrayConstructor(array.length);
+	for (let i = 0; i < array.length; i++) {
+		cpy[i] = array[i];
+	}
+	return cpy;
 }
 
 export { Tensor };

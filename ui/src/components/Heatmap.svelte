@@ -37,8 +37,8 @@
 				Plot.plot({
 					padding: 0,
 					grid: true,
-					x: { axis: null, label: "Columns", inset: 30 },
-					y: { axis: null, label: "Rows" },
+					x: { axis: null, label: "column", inset: 30 },
+					y: { axis: null, label: "row" },
 					color: {
 						type: "linear",
 						scheme: "RdBu",
@@ -52,6 +52,7 @@
 							fx: "label",
 							fill: "weight",
 							inset: 0.5,
+							tip: true,
 						}),
 					],
 					...settings,

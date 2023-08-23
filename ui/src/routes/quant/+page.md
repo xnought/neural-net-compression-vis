@@ -209,60 +209,26 @@ So really the column structure of the matrix is what we're after, not simply an 
 
 One way to think about this is through how an input <Math text="x" /> is transformed by the weight matrix <Math text="W" /> under matrix multiplication and normalized as
 
-<Math text="\frac[||Wx||_1][||x||_1]" big /> where <Math text="||\cdot||_1" /> is the vector one-norm. You can directly interpret this as measuring how much the input has changed due to the matrix multiplication with the weight matrix.
+<Math text="\frac[||Wx||_1][||x||_1]\tag[3]" big /> where <Math text="||\cdot||_1" /> is the vector one-norm. You can directly interpret this as measuring how much the input has changed due to the matrix multiplication with the weight matrix.
 
 Then, in order to get a compact measure for the weight matrix, I can maximize <Math text="x" /> which leaves me with the matrix operator norm induced by the one-norm: take the absolute sum over the columns and take the max column sum, that's the norm. Intuitively, this measures the vector <Math text="x" /> that is most amplified by the matrix multiplication. You might consider if there are alternative measures.
 
 Now with this matrix operator norm, I can have a measure for how big the matrix is given that it's going to be used for matrix multiplication.
 
 Then, I can simply do the same difference of error, but this time with the matrix operator norm
-<Math text="\text[error] := \frac[||W - C||][||W||]" big/> which can be interpreted as how much does the error deviation affect the matrix multiplication, then that is the error!
+<Math text="\text[error] := \frac[||W - C||][||W||]\tag[4]" big/> which can be interpreted as how much does the error deviation affect the matrix multiplication, then that is the error!
 
-<!-- -   [ ] Error on different distributions of weights
--   [ ] Compress autoencoder trained via pytorch -->
+You might think this has been one massive tangent, and it kind of has, but this is how we can determine whether its a good idea to apply quantization to a certain weight matrix or if we should keep trying other methods or move on.
 
-<!-- ## \_
+## Error on different distributions
 
-Okay, now that we can see the general strategy to quantify error works and aligns with how we saw differences in the images, we can apply it to an unintuitive scenario. Something we can't easily look at and tell if the compression is good or not: neural network weights.
+So what matrices compress well and what do not? Now that we have an error metric, we can try a ton of different weight distributions that one may encounter and see if any structure does well and does terribly.
 
-:::tip[think]
-What mechanisms inside a neural network would be affected if we changed the trained weights slightly?
-:::
+<KMeansLive />
 
-Let's break this apart together. For the vast majority of use cases, we have some prediction we want to make. This could be image classification or even probabilities over possible text tokens to finish a sentence.
-
-So if the output is changed, clearly we have a problem. What what changes the output?
-
-Well obviously the previous neural network layer. And what affects that neural network layer? Well, the layers before that!
-
-Okay, so then let's go to the initial layer that transforms the inputs.
-
-So what inside the layer is affected by our quantization of the weights?
-
-Although there are more intuitive explanation of what a neural network is doing, one easy way to represent the change is a linear transformation of the input space, followed by a non-linear function.
-
-We store these values in a weight matrix <Math text="W" /> and multiply it by the input vector <Math text="x" /> or <Math text="Wx" /> and typically apply some non-linear activation function like <Math text="\text[ReLU]\left(Wx\right)" />.
-
-So then what affects the non-linear output? Well, now we're simply left with the inside <Math text="Wx\tag[2]." big />
-
-Okay, well now we've quantized and compressed <Math text="W" /> into something different which I'll call <Math text="Q" /> for quantized.
-
-One potential way to quantify error would be to do the same method we did with the images. So compute the difference between <Math text="W" /> and <Math text="Q" />, then average it all up. However, that would ignore the meaning of what we're doing. We're transforming the input <Math text="x" /> into some output using matrix multiplication. So we want to take into account how multiplies and adds amplify our error.
-
-:::note
-It is also important to know how that error is then amplified again when it is input into the next layer of the neural network, but I'll ignore that complexity for now.
-
-Let's stick with how the linear transformation of the input is changed for now.
-:::
-
-So I can use the 1-norm induced operator norm on the difference between <Math text="W" /> and <Math text="Q" /> to see how the error is affected under matrix multiplication. In other words, I'm trying to measure how the error is accentuated by matrix multiplication as <Math text="\frac[||W-Q||][||W||]\tag[3]" big /> which is almost the same as <Math text="(1)" /> as the error between the image and the compressed.
-
-The larger the matrix multiplication exaggerates the pixel wise error, the worse off we are.
-
--   [ ] Have a rotation example in notebook
--   [ ] Mockup visuals
--   [ ] Have larger example with python tutorial using my code
--   [ ] Resnet with tvm?
--   [ ] If time permits add stable diffusion
-
-<KMeansLive /> -->
+-   [ ] different distributions
+    -   [ ] mostly zero except a few
+    -   [ ] normal
+    -   [ ] normal with outlier
+-   [ ] Prettify the quantization error
+-   [ ] Have a cool autoencoder example
