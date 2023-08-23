@@ -3,17 +3,18 @@
 	import { quantize } from "./kmeans";
 	import Heatmap from "./Heatmap.svelte";
 	import Dist from "./Dist.svelte";
+	import * as d3 from "d3";
 
 	const m = 15,
 		n = 15;
 	const dataOptions = {
-		uniform: Tensor.randu([m, n]),
-		zeros: Tensor.zeros([m, n]),
+		uniform: Tensor.randu([m, n], -2, 2),
+		normal: Tensor.randn([m, n], 0, 1),
+		outlier: extremeOutliers(Tensor.randn([m, n], 0, 1), 25, 1),
 	};
-	let selected = "uniform";
-	let bits = 2;
+	let selected = "normal";
+	let bits = 1;
 	const cache = {};
-
 	$: data = dataOptions[selected];
 	$: quant = quantizeOrFromCache(selected, data, bits);
 
@@ -23,6 +24,15 @@
 			cache[key] = quantize(data, bits);
 		}
 		return cache[key];
+	}
+
+	function extremeOutliers(t, value = 10, times = 1) {
+		for (let i = 0; i < times; i++) {
+			const m = d3.randomInt(t.shape[0] - 1)();
+			const n = d3.randomInt(t.shape[1] - 1)();
+			t.data[t.index2D(m, n)] = value;
+		}
+		return t;
 	}
 
 	/**

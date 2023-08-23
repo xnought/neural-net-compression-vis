@@ -1,3 +1,5 @@
+import * as d3 from "d3";
+
 const TypedArrays = {
 	f32: Float32Array,
 	u8: Uint8Array,
@@ -188,12 +190,18 @@ class Tensor {
 		}
 		return new Tensor(data, shape, dtype);
 	}
-	static randu(shape, dtype = "f32") {
-		let data = new Array(shape[0] * shape[1]);
-		for (let i = 0; i < data.length; i++) {
-			data[i] = Math.random() - 0.5;
+	static randrng(shape, rng, dtype) {
+		const t = Tensor.$(shape[0] * shape[1], [shape[0], shape[1]], dtype);
+		for (let i = 0; i < t.data.length; i++) {
+			t.data[i] = rng();
 		}
-		return new Tensor(data, shape, dtype);
+		return t;
+	}
+	static randu(shape, min = 0.0, max = 1.0, dtype = "f32") {
+		return Tensor.randrng(shape, d3.randomUniform(min, max), dtype);
+	}
+	static randn(shape, mean = 0, stdvar = 1, dtype = "f32") {
+		return Tensor.randrng(shape, d3.randomNormal(mean, stdvar), dtype);
 	}
 	round() {
 		for (let i = 0; i < this.data.length; i++) {

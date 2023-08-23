@@ -40,7 +40,7 @@
 					y: { grid: true },
 					color: {
 						style: "background:none;",
-						type: "linear",
+						type: "diverging",
 						scheme: "RdBu",
 					},
 					marks: [

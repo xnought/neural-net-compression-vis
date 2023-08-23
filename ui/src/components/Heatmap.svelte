@@ -40,7 +40,7 @@
 					x: { axis: null, label: "column", inset: 30 },
 					y: { axis: null, label: "row" },
 					color: {
-						type: "linear",
+						type: "diverging",
 						scheme: "RdBu",
 						legend: true,
 						style: "background:none;",
