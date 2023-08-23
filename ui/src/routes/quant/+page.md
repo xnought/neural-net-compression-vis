@@ -193,10 +193,33 @@ Although other operations will end up changing the numbers, the matrix multiplic
 How can I quantify error with respect to how the weight matrix is used? In other words, how can I quantify error with respect to the matrix multiplication? If I could assign a error number to a quantized weight matrix, I could then get an intuition for what types of weights/structure/patterns are fine and ones that lead to problems.
 :::
 
--   [ ] Matrix operator norm
--   [ ] Error computation
--   [ ] Error on different distributions of weights
--   [ ] Compress autoencoder trained via pytorch
+## Size of error
+
+Ultimately I want to determine the size of the error between a weight matrix <Math text="W" /> and the compressed version <Math text="C" />. The naive way to do it is to apply the same error I did with the image example: the error between each corresponding element.
+
+But it may be the case that matrix multiplication hides or enhances some of the error. So in a way, measuring the elementwise deviation would be deceitful.
+
+:::tip[think]
+So I ask, what is matrix-vector multiplication really doing <Math text="Wx" />?
+:::
+
+Really what matrix-vector multiplication is a weighted combination of the columns of the matrix according to the input.
+
+So really the column structure of the matrix is what we're after, not simply an element-wise sum which takes into account no structure.
+
+One way to think about this is through how an input <Math text="x" /> is transformed by the weight matrix <Math text="W" /> under matrix multiplication and normalized as
+
+<Math text="\frac[||Wx||_1][||x||_1]" big /> where <Math text="||\cdot||_1" /> is the vector one-norm. You can directly interpret this as measuring how much the input has changed due to the matrix multiplication with the weight matrix.
+
+Then, in order to get a compact measure for the weight matrix, I can maximize <Math text="x" /> which leaves me with the matrix operator norm induced by the one-norm: take the absolute sum over the columns and take the max column sum, that's the norm. Intuitively, this measures the vector <Math text="x" /> that is most amplified by the matrix multiplication. You might consider if there are alternative measures.
+
+Now with this matrix operator norm, I can have a measure for how big the matrix is given that it's going to be used for matrix multiplication.
+
+Then, I can simply do the same difference of error, but this time with the matrix operator norm
+<Math text="\text[error] := \frac[||W - C||][||W||]" big/> which can be interpreted as how much does the error deviation affect the matrix multiplication, then that is the error!
+
+<!-- -   [ ] Error on different distributions of weights
+-   [ ] Compress autoencoder trained via pytorch -->
 
 <!-- ## \_
 
