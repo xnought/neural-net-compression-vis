@@ -4,14 +4,14 @@
 	import Heatmap from "./Heatmap.svelte";
 	import Dist from "./Dist.svelte";
 
-	const m = 20,
-		n = 20;
+	const m = 15,
+		n = 15;
 	const dataOptions = {
 		uniform: Tensor.randu([m, n]),
 		zeros: Tensor.zeros([m, n]),
 	};
 	let selected = "uniform";
-	let bits = 1;
+	let bits = 2;
 	const cache = {};
 
 	$: data = dataOptions[selected];
@@ -40,8 +40,11 @@
 		return maxSum;
 	}
 	function quantizationError(W, Q) {
+		// W.sub(Tensor.zeros(W.shape), true).print();
+		// W.print();
 		return matrixOperator1Norm(W.sub(Q, true)) / matrixOperator1Norm(W);
 	}
+
 	$: error = quantizationError(data, quant);
 </script>
 
@@ -51,7 +54,7 @@
 	{/each}
 </select>
 
-<input type="range" min="1" max="8" bind:value={bits} />
+<input type="range" min="0" max="7" bind:value={bits} />
 {bits} bits
 {#if data}
 	{@const quantizedData = quant.reconstruct()}
@@ -68,7 +71,7 @@
 		height={200}
 	/>
 {/if}
-<p>Quantization error: {error}</p>
+<p>Quantization error: {error.toFixed(5)}</p>
 
 <style>
 	/*  put stuff here */

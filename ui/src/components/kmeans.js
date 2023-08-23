@@ -77,6 +77,7 @@ function tensorTo2D(t) {
 	return newarr;
 }
 export function quantize(params, bits = 5, useMyLib = false) {
+	if (bits <= 0) return Tensor.zeros(params.shape);
 	if (bits > 8) throw Error();
 	if (useMyLib) {
 		const { centroids, assignments } = kMeans1D(params, 2 ** bits);
