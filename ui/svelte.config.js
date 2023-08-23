@@ -10,7 +10,7 @@ const config = {
 	kit: {
 		adapter: adapter({
 			pages: "dist",
-			out: "public",
+			out: "dist",
 		}),
 	},
 };
