@@ -3,6 +3,7 @@
 	import { quantize } from "./kmeans";
 	import Heatmap from "./Heatmap.svelte";
 	import Dist from "./Dist.svelte";
+	import ErrorBar from "./ErrorBar.svelte";
 	import * as d3 from "d3";
 
 	const m = 15,
@@ -81,7 +82,7 @@
 		height={200}
 	/>
 {/if}
-<p>Quantization error: {error.toFixed(5)}</p>
+<ErrorBar data={[{ label: "||W-C||/||W||", error }]} />
 
 <style>
 	/*  put stuff here */
