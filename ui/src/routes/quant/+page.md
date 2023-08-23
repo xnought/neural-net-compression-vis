@@ -9,6 +9,7 @@ lastUpdate: August 2023
     import ImageErrorWithNumber from "../../components/ImageErrorWithNumber.svelte";
     import Math from "../../components/KaTeX.svelte";
     import KMeansLive from "../../components/KMeansLive.svelte";
+    import AE from "../../components/AE.svelte";
 </script>
 <style>
     img {
@@ -233,3 +234,5 @@ So what matrices compress well and what do not? Now that we have an error metric
 -   [x] Prettify the quantization error
 -   [ ] Write the stuff around the distributions of error
 -   [ ] Have a cool autoencoder example
+
+<AE />
