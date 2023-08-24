@@ -118,7 +118,7 @@
 	let down = false;
 
 	const options = [1, 2, 3, 4, 5, 6, 7, 8];
-	let optionSelected = 0;
+	let optionSelected = options.length - 1;
 	function updateSelected(optionSelected) {
 		model = models[+optionSelected];
 		updateOutput();
@@ -203,9 +203,11 @@
 	.input-canvas {
 		border: 3px solid steelblue;
 		border-radius: 3px;
+		cursor: crosshair;
 	}
 	.output-canvas {
 		border: 3px solid salmon;
 		border-radius: 3px;
+		cursor: not-allowed;
 	}
 </style>
