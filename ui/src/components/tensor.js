@@ -44,6 +44,17 @@ class Tensor {
 		}
 		return this;
 	}
+	sigmoid() {
+		for (let i = 0; i < this.shape[0]; i++) {
+			for (let j = 0; j < this.shape[1]; j++) {
+				const index = this.index2D(i, j);
+				const z = this.data[index];
+				// \frac{1}{1 + e^{-z}}
+				this.data[index] = 1 / (1 + Math.exp(-z));
+			}
+		}
+		return this;
+	}
 	tanh() {
 		for (let i = 0; i < this.shape[0]; i++) {
 			for (let j = 0; j < this.shape[1]; j++) {
