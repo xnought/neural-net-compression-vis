@@ -25,18 +25,7 @@
 
 	onMount(async () => {
 		// const stateDict = await fetchStateDict("ae-1-quantized.json");
-		// const model = Autoencoder(
-		// 	new Linear(28 * 28, 1000),
-		// 	new ReLU(),
-		// 	new Linear(1000, 256),
-		// 	new ReLU(),
-		// 	new Linear(256, 256),
-		// 	new ReLU(),
-		// 	new Linear(256, 1000),
-		// 	new ReLU(),
-		// 	new Linear(1000, 28 * 28),
-		// 	new Sigmoid()
-		// ).loadStateDict(stateDict);
+		// const model = Autoencoder().loadStateDict(stateDict);
 		// const input = Tensor.zeros([1, 28 * 28], "f32");
 		// const output = model.forward(input);
 	});
