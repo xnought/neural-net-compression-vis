@@ -90,11 +90,16 @@ class Tensor {
 	}
 
 	get T() {
+		const cpy = this.shallowCopy();
+		cpy.shape = [this.shape[1], this.shape[0]];
+		cpy.transposed = !cpy.transposed;
+		return cpy;
+	}
+	shallowCopy() {
 		const t = new Tensor(
 			this.data,
-			[this.shape[1], this.shape[0]],
-			this.dtype,
-			!this.transposed
+			deepCopyArray(this.shape, Array),
+			this.dtype
 		);
 		t.codebook = this.codebook;
 		return t;
@@ -107,7 +112,7 @@ class Tensor {
 		);
 		return t;
 	}
-	self(copy) {
+	self(copy, deep = true) {
 		return copy ? this.deepCopy() : this;
 	}
 	sub(other, copy = false) {
@@ -243,6 +248,15 @@ class Tensor {
 			}
 		}
 		return reconstructed;
+	}
+	sum() {
+		let total = 0.0;
+		for (let i = 0; i < this.shape[0]; i++) {
+			for (let j = 0; j < this.shape[1]; j++) {
+				total += this.value2D(i, j);
+			}
+		}
+		return total;
 	}
 }
 

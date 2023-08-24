@@ -2,9 +2,10 @@
 	import { onMount } from "svelte";
 	import { Sequential, Linear, ReLU, Sigmoid } from "./nn";
 	import { Tensor } from "./tensor";
+	import * as d3 from "d3";
 
 	async function fetchStateDict(name) {
-		const model = await fetch("ae-1-quantized.json");
+		const model = await fetch(name);
 		return model.json();
 	}
 
@@ -74,9 +75,14 @@
 		for (let i = 0; i < imageWidth; i++) {
 			for (let j = 0; j < imageWidth; j++) {
 				const pixel = output.data[j * imageWidth + i];
-				if (pixel !== 0) {
-					draw(ctx, i * brushSize, j * brushSize);
-				}
+				const c = d3.color("hsl(0, 0%, " + pixel * 100 + "%)");
+				ctx.fillStyle = c.toString();
+				ctx.fillRect(
+					i * brushSize,
+					j * brushSize,
+					brushSize,
+					brushSize
+				);
 			}
 		}
 	}
@@ -135,7 +141,6 @@
 					height,
 					brushSize
 				);
-				console.log(input.shape);
 				const output = model.forward(input);
 				writeToCanvasWithGreyscale(outputCtx, output);
 			}}>Run</button
