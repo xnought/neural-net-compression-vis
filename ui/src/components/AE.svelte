@@ -26,18 +26,16 @@
 	}
 
 	async function loadAllModels(Model) {
-		const reqs = options.map((opt) =>
-			fetchStateDict(`ae-${opt}-quantized.json`)
-		);
+		const reqs = options.map((opt) => fetchStateDict(`ae/q${opt}.json`));
 		const stateDicts = await Promise.all(reqs);
 		return stateDicts.map((d) => Model().loadStateDict(d));
 	}
 
 	let models;
 	let model;
+	let mounted = false;
 	onMount(async () => {
 		models = await loadAllModels(Autoencoder);
-		console.log(models);
 		model = models.at(-1);
 
 		inputCtx = inputCanvas.getContext("2d", { willReadFrequently: true });
@@ -47,6 +45,7 @@
 		outputCtx = outputCanvas.getContext("2d");
 		outputCtx.fillStyle = "black";
 		outputCtx.fillRect(0, 0, width, height);
+		mounted = true;
 	});
 
 	function draw(ctx, x, y) {
@@ -118,10 +117,14 @@
 	let brushSize = width / imageWidth;
 	let down = false;
 
-	const options = [1];
+	const options = [1, 2, 3, 4, 5, 6, 7, 8];
 	let optionSelected = 0;
+	function updateSelected(optionSelected) {
+		model = models[+optionSelected];
+		updateOutput();
+	}
 	$: selected = options[optionSelected];
-	console.log(selected);
+	$: if (mounted) updateSelected(optionSelected);
 </script>
 
 <input
@@ -164,8 +167,7 @@
 			on:click={() => {
 				inputCtx.fillStyle = "black";
 				inputCtx.fillRect(0, 0, width, height);
-				outputCtx.fillStyle = "black";
-				outputCtx.fillRect(0, 0, width, height);
+				updateOutput();
 			}}>Clear Canvas</button
 		>
 	</div>
