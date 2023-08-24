@@ -92,11 +92,10 @@ class Tensor {
 	get T() {
 		const t = new Tensor(
 			this.data,
-			this.shape,
+			[this.shape[1], this.shape[0]],
 			this.dtype,
 			!this.transposed
 		);
-		[t.shape[0], t.shape[1]] = [t.shape[1], t.shape[0]];
 		t.codebook = this.codebook;
 		return t;
 	}

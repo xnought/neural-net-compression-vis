@@ -39,7 +39,12 @@ export class Sequential {
 		this.layers = layers;
 	}
 	forward(input) {
+		// console.log("hit");
 		for (const layer of this.layers) {
+			// if (layer instanceof Linear) {
+			// 	console.log(input.shape);
+			// 	console.log(layer.weight.shape);
+			// }
 			input = layer.forward(input);
 		}
 		return input;

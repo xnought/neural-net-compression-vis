@@ -23,11 +23,11 @@
 		);
 	}
 
+	let model;
 	onMount(async () => {
-		// const stateDict = await fetchStateDict("ae-1-quantized.json");
-		// const model = Autoencoder().loadStateDict(stateDict);
-		// const input = Tensor.zeros([1, imageWidth * imageWidth], "f32");
-		// const output = model.forward(input);
+		const stateDict = await fetchStateDict("ae-1-quantized.json");
+		model = Autoencoder().loadStateDict(stateDict);
+
 		inputCtx = inputCanvas.getContext("2d", { willReadFrequently: true });
 		inputCtx.fillStyle = "black";
 		inputCtx.fillRect(0, 0, width, height);
@@ -44,7 +44,7 @@
 	function exportToGreyscale(ctx, width, height, brushSize) {
 		const colors = Tensor.$(
 			imageWidth * imageWidth,
-			[imageWidth, imageWidth],
+			[1, imageWidth * imageWidth],
 			"f32"
 		);
 		for (let i = 0; i < imageWidth; i++) {
@@ -59,7 +59,6 @@
 				colors.data[j * imageWidth + i] = pixel;
 			}
 		}
-		colors.print();
 		return colors;
 	}
 
@@ -130,12 +129,14 @@
 		>
 		<button
 			on:click={() => {
-				const output = exportToGreyscale(
+				const input = exportToGreyscale(
 					inputCtx,
 					width,
 					height,
 					brushSize
 				);
+				console.log(input.shape);
+				const output = model.forward(input);
 				writeToCanvasWithGreyscale(outputCtx, output);
 			}}>Run</button
 		>
