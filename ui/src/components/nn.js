@@ -132,6 +132,18 @@ export class Sequential {
 		}
 		return this;
 	}
+	get bytes() {
+		let total = 0;
+		for (const layer of this.layers) {
+			if (layer instanceof Linear) {
+				total += layer.weight.bytes + layer.bias.bytes;
+			}
+		}
+		return total;
+	}
+	MB() {
+		return this.bytes / 1024 ** 2;
+	}
 }
 
 // const stateDict = {

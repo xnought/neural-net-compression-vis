@@ -227,12 +227,6 @@ So what matrices compress well and what do not? Now that we have an error metric
 
 <KMeansLive />
 
--   [x] different distributions
-    -   [x] mostly zero except a few
-    -   [x] normal
-    -   [x] normal with outlier
--   [x] Prettify the quantization error
--   [ ] Write the stuff around the distributions of error
--   [ ] Have a cool autoencoder example
+## Applied to a real model
 
 <AE />
