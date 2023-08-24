@@ -3,6 +3,7 @@
 	import { Sequential, Linear, ReLU, Sigmoid } from "./nn";
 	import { Tensor } from "./tensor";
 	import * as d3 from "d3";
+	import AeSkeleton from "./AESkeleton.svelte";
 
 	async function fetchStateDict(name) {
 		const model = await fetch(name);
@@ -87,6 +88,12 @@
 		}
 	}
 
+	function updateOutput() {
+		const input = exportToGreyscale(inputCtx, width, height, brushSize);
+		const output = model.forward(input);
+		writeToCanvasWithGreyscale(outputCtx, output);
+	}
+
 	/** @type {HTMLCanvasElement}*/
 	let inputCanvas;
 	let inputCtx;
@@ -96,16 +103,17 @@
 	let outputCtx;
 
 	let imageWidth = 28;
-	let width = imageWidth * 8,
+	let width = imageWidth * 6,
 		height = width;
 	let brushSize = width / imageWidth;
 	let down = false;
 </script>
 
-<div>
+<div class="container">
 	<div>
 		<div>
 			<canvas
+				class="input-canvas"
 				bind:this={inputCanvas}
 				{width}
 				{height}
@@ -114,6 +122,7 @@
 				}}
 				on:mouseup={() => {
 					down = false;
+					updateOutput();
 				}}
 				on:mousemove={(e) => {
 					if (down) {
@@ -131,32 +140,42 @@
 			on:click={() => {
 				inputCtx.fillStyle = "black";
 				inputCtx.fillRect(0, 0, width, height);
-			}}>Clear</button
-		>
-		<button
-			on:click={() => {
-				const input = exportToGreyscale(
-					inputCtx,
-					width,
-					height,
-					brushSize
-				);
-				const output = model.forward(input);
-				writeToCanvasWithGreyscale(outputCtx, output);
-			}}>Run</button
+				outputCtx.fillStyle = "black";
+				outputCtx.fillRect(0, 0, width, height);
+			}}>Clear Canvas</button
 		>
 	</div>
 	<div>
+		<AeSkeleton color="steelblue" />
+	</div>
+	<div>
 		<div>
-			<canvas bind:this={outputCanvas} {width} {height} />
+			<canvas
+				bind:this={outputCanvas}
+				{width}
+				{height}
+				class="output-canvas"
+			/>
 		</div>
 	</div>
-	output
 </div>
 
 <style>
-	/*  put stuff here */
-	/* canvas {
-		outline: 1px solid black;
-	} */
+	.container {
+		display: flex;
+		gap: 5px;
+	}
+	.label {
+		font-size: 13px;
+		margin-bottom: 5px;
+		opacity: 0.7;
+	}
+	.input-canvas {
+		border: 3px solid steelblue;
+		border-radius: 3px;
+	}
+	.output-canvas {
+		border: 3px solid salmon;
+		border-radius: 3px;
+	}
 </style>
