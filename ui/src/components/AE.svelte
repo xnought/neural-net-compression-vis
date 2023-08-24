@@ -25,10 +25,20 @@
 		);
 	}
 
+	async function loadAllModels(Model) {
+		const reqs = options.map((opt) =>
+			fetchStateDict(`ae-${opt}-quantized.json`)
+		);
+		const stateDicts = await Promise.all(reqs);
+		return stateDicts.map((d) => Model().loadStateDict(d));
+	}
+
+	let models;
 	let model;
 	onMount(async () => {
-		const stateDict = await fetchStateDict("ae-1-quantized.json");
-		model = Autoencoder().loadStateDict(stateDict);
+		models = await loadAllModels(Autoencoder);
+		console.log(models);
+		model = models.at(-1);
 
 		inputCtx = inputCanvas.getContext("2d", { willReadFrequently: true });
 		inputCtx.fillStyle = "black";
@@ -107,10 +117,24 @@
 		height = width;
 	let brushSize = width / imageWidth;
 	let down = false;
+
+	const options = [1];
+	let optionSelected = 0;
+	$: selected = options[optionSelected];
+	console.log(selected);
 </script>
+
+<input
+	type="range"
+	min="0"
+	max={options.length - 1}
+	bind:value={optionSelected}
+/>
+{selected}
 
 <div class="container">
 	<div>
+		<div class="label">Input | You drag to draw!</div>
 		<div>
 			<canvas
 				class="input-canvas"
@@ -146,9 +170,11 @@
 		>
 	</div>
 	<div>
+		<div class="label">Autoencoder</div>
 		<AeSkeleton color="steelblue" />
 	</div>
 	<div>
+		<div class="label">Output</div>
 		<div>
 			<canvas
 				bind:this={outputCanvas}
