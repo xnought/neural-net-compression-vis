@@ -204,6 +204,24 @@ But it may be the case that matrix multiplication hides or enhances some of the 
 So I ask, what is matrix-vector multiplication really doing <Math text="Wx" />?
 :::
 
+Well, instead of thinking I could just do!
+
+<Math text="
+\text[error] &= \frac[||Wx - Qx||][||Wx||]\\
+&= \frac[||Ex||][||Wx||]\\
+&= \frac[||EW^[-1]y||][||Wx||]\\
+&= \frac[||EW^[-1]y||][||y||]\\
+&\leq \frac[||E||||W^[-1]||||y||][||y||]\\
+&= \frac[||E||||W^[-1]||||y||][||y||]\\
+&= ||E||||W^[-1]||\\
+&= ||E||||W^[-1]||\frac[||W||][||W||]\\
+&= ||W||||W^[-1]||\frac[||E||][||W||]\\
+&= ||W||||W^[-1]||\frac[||W-Q||][||W||]
+" begin="align*" />
+
+Just condition number times.
+
+<!--
 Really what matrix-vector multiplication is a weighted combination of the columns of the matrix according to the input.
 
 So really the column structure of the matrix is what we're after, not simply an element-wise sum which takes into account no structure.
@@ -219,7 +237,7 @@ Now with this matrix operator norm, I can have a measure for how big the matrix 
 Then, I can simply do the same difference of error, but this time with the matrix operator norm
 <Math text="\text[error] := \frac[||W - C||][||W||]\tag[4]" big/> which can be interpreted as how much does the error deviation affect the matrix multiplication, then that is the error!
 
-You might think this has been one massive tangent, and it kind of has, but this is how we can determine whether its a good idea to apply quantization to a certain weight matrix or if we should keep trying other methods or move on.
+You might think this has been one massive tangent, and it kind of has, but this is how we can determine whether its a good idea to apply quantization to a certain weight matrix or if we should keep trying other methods or move on. -->
 
 ## Error on different distributions
 
