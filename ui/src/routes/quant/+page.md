@@ -52,7 +52,7 @@ How does compressing your neural network weights change the outputs? This articl
 
 Modern deep learning is quite extraordinary. I don't need to convince you, you've probably seen the latest generative art models and other incredible models that blow your socks off.
 
-<div style="background-image: url(taller.png);height: 50px;" class="thumb"/>
+<div style="background-image: url(dogs.png);height: 50px;" class="thumb"/>
 
 _From [Lexica](https://lexica.art/?q=34e00886-6b4f-47fe-a9b9-9f4e630bbb28)'s Aperture Model._
 
