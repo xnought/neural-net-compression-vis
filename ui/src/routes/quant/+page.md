@@ -1,5 +1,5 @@
 ---
-title: On Compressing Weights
+title: Visualizing Quantization Error
 lastUpdate: August 2023
 ---
 
@@ -33,66 +33,57 @@ lastUpdate: August 2023
         margin-right: 20px;
         background-size: cover;
         background-position: top left;
-        transition-property: background, box-shadow;
+        transition-property: background;
         transition-duration: 1.5s;
         transition-timing-function: ease;
         transition-delay: 0s;
         border-radius: 5px;
-        box-shadow: 0px -1px 2px 2px #00000020;
+        box-shadow: 0px 0px 2px 2px #00000020;
     }
     .thumb:hover {
         background-position: bottom left;
-        box-shadow: 0px 1px 2px 2px #00000020;
     }
 </style>
 
-How does compressing your neural network weights change the outputs? This article attempts to build up a good way to think about model compression and the fundamental operations that are affected. From as close to first principles logic as possible.
+The coolest models on the market are just too big for your measly computer's memory. But actually, you can apply compression methods and run these models for yourself. This article motivates a simple method to compress your model (weight sharing quantization via k-means) while visualizing the error you incur.
 
-## Big indeed
+## Introduction
 
-Modern deep learning is quite extraordinary. I don't need to convince you, you've probably seen the latest generative art models and other incredible models that blow your socks off.
+Modern deep learning is quite extraordinary. I don't need to convince you. You've likely seen the latest generative art models.
 
-<div style="background-image: url(dogs.png);height: 50px;" class="thumb"/>
+<div style="background-image: url(cyber.jpg);height: 50px;" class="thumb"/>
 
-_From [Lexica](https://lexica.art/?q=34e00886-6b4f-47fe-a9b9-9f4e630bbb28)'s Aperture Model._
+_From [Lexica](https://lexica.art/)'s Aperture Model._
 
-The funny thing is that these networks are just transforming the inputs over and over again until a desirable output. To create really complex outputs (like generative art), you thus need a reasonable amount of transformations. So it's not at all surprising that models like [Stable Diffusion XL](https://stability.ai/stablediffusion) have over 3 billion weights!
+These models generate detailed, complex, and creative outputs. And yet, when you boil things down they are just transforming the inputs over and over again until a desirable output. So it's not at all surprising that models like [Stable Diffusion XL](https://stability.ai/stablediffusion) have over 3 billion numbers (parameters) that transform your inputs in a sophisticated way.
 
-Likely the average consumer (you and me) can't run these models on our computers alone. They just won't fit in RAM, and even if they do, it might take a century to produce one generation.
+Size enables amazing capabilities, but also limits who can run them. Most people don't have fast GPUs with lots of memory. Instead, we must dive into the art of compressing neural network parameters while not totally ruining the awesomeness of the model.
 
-Luckily, there are strategies to cope with the size. Namely, model quantization: the act of converting floating point weights into small integers. With quantization you can reasonably reduce the model size by 4x or more.
+This article specifically uses the weight sharing scheme from [Deep Compression](https://arxiv.org/abs/1510.00149) to drastically reduce the size of my weights with little error (post-training).
 
-If the outputs of the model aren't changed too much, the compression is a total win! Now more people can run these incredible models!
-
-## Sharing
+## Sharing as Compression
 
 Suppose you owned 20 dogs. An army of golden retrievers. And also suppose you are on the market for dog toys.
 
-Should you buy 20 toys for all 20 dogs? That would be quite expensive! If we clock each toy at 20$, then you'd pay 400$.
+Should you buy 20 toys for all 20 dogs? That would be quite expensive! If each toy was $20, then you'd pay $400. (as you can tell I love the number 20)
 
-Or you could reason that buying 5 toys would be fine. Not all 20 dogs are playing with their toy at once. They could share! Now your bill would only be 100$.
+But you are a clever one you. You could reason that buying 5 toys would be totally fine. The dogs might get value out of sharing the toys, and furthermore not all 20 dogs would play with their toy at the same time. Now your bill would only be $100 for the 5 toys.
 
-The basic principle is that sharing may be good enough under constraints.
+Morale of the short story: sharing under constraints is reasonable. More than that. It's a good idea. Don't pay for more than you need to if you're on a budget.
 
-## Sharing Image Pixels
+## Sharing Pixels
 
-How can sharing be applied to reduce image size? Images are represented pretty closely to neural networks, so this is a tangent, but in a way it's not. Pay attention these intuitions will be helpful!
+Before we get to neural network weights, I'll take a quick detour through sharing pixels in an image to drastically reduce the size. It's too intuitive to pass up and is exactly what I'll do to the neural network parameters.
 
 As you know, images are made up of tons of small colored squares: pixels. I'll start with a 880 pixels wide by 602 pixels tall image of this cutest golden retriever you've ever seen.
 
 <img src="dog.png" style="width: 300px;">
 
-If I had enough time, I could count how many pixels there are and find there are almost five million! Or if I just remembered how to multiply, I'd multiply the width times the height to get the total number as <Math text="808 \cdot 602 = 4,824,160"/> pixels, which is just under five million pixels. Ah whatever, I'm in a rounding mood.
+In total, there are 4,824,160 pixels in the image (<Math text="880 \cdot 602"/>). Each pixel/color is represented by three numbers: <span style="color: rgb(255, 0, 0)">red</span>, <span style="color: rgb(0, 255, 0)">green</span>, and <span style="color: rgb(0, 0, 255)">blue</span>. In total this one image is storing nearly 15 million numbers! That is a lot!
 
-Remember, each pixel is one color. And each color is represented by three numbers: <span style="color: rgb(255, 0, 0)">red</span>, <span style="color: rgb(0, 255, 0)">green</span>, and <span style="color: rgb(0, 0, 255)">blue</span>. So if there are around five million pixels and each pixel has three numbers, than in total there are about 15 million numbers in that image[^1].
+In this case, our constraint is the number of pixels. How can we boil down the pixels to just a few important colors and reuse them over again? (sharing)
 
-[^1]: I'm ignoring opacity alpha values.
-
-:::tip[think]
-How can we apply sharing to the pixels?
-:::
-
-In order to share the pixels, we need to constrain them into a few important ones. Getting one color is easy. We can just take the average over all the pixels to get the most important color. Then, I can assign each pixel one number that indexes into my shared colors. In this case there is only one.
+One such way is through a summary of the data. One such summary is an average. Below, I've taken an average over all the pixels and assigned each pixel that average.
 
 <KMeansImage selected={0}/>
 
