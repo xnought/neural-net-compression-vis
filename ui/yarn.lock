@@ -4113,7 +4113,7 @@ ml-kmeans@^6.0.0:
     ml-nearest-vector "^2.0.1"
     ml-random "^0.5.0"
 
-ml-matrix@^6.9.0:
+ml-matrix@^6.10.4, ml-matrix@^6.9.0:
   version "6.10.4"
   resolved "https://registry.yarnpkg.com/ml-matrix/-/ml-matrix-6.10.4.tgz#babee344b20062d9c123aa801c2e5d0d0c7477f6"
   integrity sha512-rUyEhfNPzqFsltYwvjNeYQXlYEaVea3KgzcJKJteQUj2WVAGFx9fLNRjtMR9mg2B6bd5buxlmkZmxM4hmO+SKg==

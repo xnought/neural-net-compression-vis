@@ -6,6 +6,7 @@
 	export let width = undefined;
 	export let height = undefined;
 	export let style = "background: none;";
+	export let domain = [0, 1];
 
 	$: settings = {
 		width,
@@ -21,7 +22,7 @@
 				Plot.plot({
 					marginLeft: 80,
 					marginRight: 50,
-					x: { domain: [0, 1] },
+					x: { domain },
 					y: { label: null },
 					// y: {},
 					marks: [

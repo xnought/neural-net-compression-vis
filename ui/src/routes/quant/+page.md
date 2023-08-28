@@ -10,6 +10,7 @@ lastUpdate: August 2023
     import Math from "../../components/KaTeX.svelte";
     import KMeansLive from "../../components/KMeansLive.svelte";
     import AE from "../../components/AE.svelte";
+    const repo = "https://github.com/xnought/docs";
 </script>
 <style>
     img {
@@ -53,7 +54,7 @@ Modern deep learning is quite extraordinary. I don't need to convince you. You'v
 
 <div style="background-image: url(cyber.jpg);height: 50px;" class="thumb"/>
 
-_From [Lexica](https://lexica.art/)'s Aperture Model._
+_From [Lexica](https://lexica.art/?q=cyberpunk+city)'s Aperture Model._
 
 These models generate detailed, complex, and creative outputs. And yet, when you boil things down they are just transforming the inputs over and over again until a desirable output. So it's not at all surprising that models like [Stable Diffusion XL](https://stability.ai/stablediffusion) have over 3 billion numbers (parameters) that transform your inputs in a sophisticated way.
 
@@ -79,162 +80,139 @@ As you know, images are made up of tons of small colored squares: pixels. I'll s
 
 <img src="dog.png" style="width: 300px;">
 
-In total, there are 4,824,160 pixels in the image (<Math text="880 \cdot 602"/>). Each pixel/color is represented by three numbers: <span style="color: rgb(255, 0, 0)">red</span>, <span style="color: rgb(0, 255, 0)">green</span>, and <span style="color: rgb(0, 0, 255)">blue</span>. In total this one image is storing nearly 15 million numbers! That is a lot!
+In total, there are 4,824,160 colors in the image (<Math text="880 \cdot 602"/>) on for each pixel. Each color is represented by three numbers: <span style="color: rgb(255, 0, 0)">red</span>, <span style="color: rgb(0, 255, 0)">green</span>, and <span style="color: rgb(0, 0, 255)">blue</span> that mix together to make the color. In total this one image is storing nearly 15 million numbers! That is a lot!
 
-In this case, our constraint is the number of pixels. How can we boil down the pixels to just a few important colors and reuse them over again? (sharing)
+To drastically reduce the memory, we will find the most important colors and share them.
 
-One such way is through a summary of the data. One such summary is an average. Below, I've taken an average over all the pixels and assigned each pixel that average.
+One such way is through a summary of the data. For example through an average. Below, I've taken an average over all the pixels and assigned each pixel that average.
 
 <KMeansImage selected={0}/>
 
-Now, what if I want two colors? In other words, if all the pixels could only share the two colors, what would the image look like?
+The compressed version looks nothing like the original, but the color isn't totally off.
+
+Now, what if I increased the number of averages I took to two? In other words, what if all the pixels had to share only two colors?
 
 <KMeansImage selected={1}/>
 
-That is starting to look like a dog!
+Even just after two shared colors, there the compressed image is starting to look like the dog with a fraction of the memory footprint!
 
-:::important[your turn]
-Drag the slider to increase the number of colors to share. When does the image start to look like the original?
+:::important[Your turn]
+Drag the slider to increase the number of colors to share.
 :::
 
 <KMeansImage selected={1} showSlider/>
 
-128 colors looks mighty close to the original image!
+At 128 colors, the images start to look strikingly similar. And of course, compared to the original of ~5 million colors, we're representing this image at a massive budget!
 
 To convert these savings to actual usable numbers, I can quickly compute each file size.
 
-Remember, each pixel still needs to reference which of the 128 colors to use for the quantized version. So we still need to keep one byte per each pixel. Then when you need to access the pixel, you can use the number to index into the 128 colors.
+Remember, each pixel still needs to reference which of the 128 colors to use for the quantized version. So each pixel is represented as a one unsigned byte integer which then indexes into the array of 128 colors.
 
-So each shared color still has three number that represents the number and then one number per pixel to index into that codebook gives us <Math text="128 \cdot 3 \cdot 4824160=4824544" /> or 4,824,544 bytes.
+Since there are 4,824,160 pixels and each has one index into the 128 shared colors (each represented by RGB), the compressed image contains <Math text="128 \cdot 3 + 4[,]824[,]160 = 4[,]824[,]544" /> numbers.
 
-Now the original was roughly 15 million numbers (and in this case bytes). That is a 3x space savings and the images look almost the same!
+Now the original was roughly 15 million numbers. That is roughly a three times space saving and I can barely tell the difference between the images.
 
 :::note
 I've left out some information on how to compute these multiple averages.
 
 **For the purposes of this article, you can ignore how I compute the averages.**
 
-However, if you must know I use the [k-means algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) on the image pixels to select out the top k average colors and assign each pixel one of those k colors.
+However, if you must know I use the [k-means algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) on the image pixels to select out the top k average colors and assign each of the original pixels the closest pixel from the averages.
+
+Check out the [Python Notebook]({repo}/blob/main/notebooks/image.ipynb) to see how I used k-means on the images.
 :::
 
-## Humans are too good
+## Quantifying Error
 
-At what point did you think that the quantized image looked close to the original? Answering for myself, it just looked closer to the original. What does that really mean?
+At what point did you think that the quantized image looked close to the original? Answering for myself, it looked closer to the original as the number of shared colors increased.
 
-Do you see the issue? If we plan to apply these quantization methods to neural network weights, how do we know when to stop or even if we should quantize at all?
+But what does it really mean that it looked closer to the original? Do you see the issue here? If we rely on subjective experience that cannot be parsed, we've got a problem.
 
-First off, quantizing and compressing stuff depends on the usecase of whatever you're compressing. In the image case, it needed to look indistinguishable from the original to humans.
+It's hard to parse the human brain, so let's make an assumption.
 
-:::tip[think]
-What is the usecase of weights in neural networks? How would quantization affect them?
-:::
+I could assume that the difference between the compressed colors and the original colors is large, the compressed image will not look like the original. So an error metric per each pixel.
 
-## Assigning a number to error
-
-Before we get to the heart of the issue, I'll quickly show you what an error metric may look like for the image case.
-
-I could assume that I as a human see the error when the colors diverge greatly from the original image.
-
-So I could find the absolute difference between the compressed and original pixels. Then visualize places where the error is still high. Furthermore, I can compress the error values into one number with an average.
-
-:::important[your turn]
-Drag the slider increase the number of colors quantized. Observe the places with high error.  
+:::important[Your turn]
+Drag the slider increase the number of colors quantized. Observe the pixels that are deep red for high error.
 :::
 
 <ImageErrorWithNumber />
 
-As the **Average Error** decreases (which is the average deviation from the original pixel color), we see the error image virtually disappears.
-
-So as long as we attach a meaningful number to the error, we can decide when it's a good idea, and how to improve our methods to quantize/compress better.
-
-But you must keep in mind the original usecase/application like we've done here with the image!
+As you can see, when the images look very similar, the red error is almost nonexistent. I can further summarize the error with an average into one number (interpreted as the average difference between the compressed and original colors per pixel).
 
 :::note
-In other words, for each pixel at (location <Math text="i" />) I find the difference between the corresponding color channels of the compressed/quantized image <Math text="C" /> and the original image <Math text="O" />. For example if the compressed color was [0,0,0] white and the original color was [255,255,255] black the summed error would be |255-0| + |255-0| + |255-0| or {255\*3} for that pixel. This would be an example of the maximum amount of error (pixel should have been black, but the compressed is white).
+The math notation is not necessary, but may clarify whats going on.
 
-I store all these errors for all the pixels in an error matrix <Math text="E"/> defined by <Math text="E_[i] = \sum_[c=1]^[3] |C_[i, c] - O_[i,c]| \tag{1}" big /> where <Math text="i" /> is the pixel index and <Math text="c"/> is the color channel index.
+For each pixel at (location <Math text="i" />) I find the difference between the corresponding color channels of the compressed/quantized image <Math text="Q" /> and the original image <Math text="W" />. For example if the compressed color was [0,0,0] white and the original color was [255,255,255] black the summed error would be |255-0| + |255-0| + |255-0| or {255\*3} for that pixel. This would be an example of the maximum amount of error (pixel should have been black, but the compressed is white).
 
-This error image <Math text="E" /> is what you see in red above. Then I simply average over these values to get the **Average Error**.
+I store all these errors for all the pixels in an error matrix <Math text="E"/> defined by <Math text="E_[i] = \sum_[c=1]^[3] |Q_[i, c] - W_[i,c]| \tag{1}" big /> where <Math text="i" /> is the pixel index and <Math text="c"/> is the color channel index.
+
+This error image <Math text="E" /> is what you see in red above. Then I simply average over these error matrix values from <Math text="(1)" /> to get the **Average Error** as <Math text="\frac[1][N]\sum_[i=1]^[N] E_i"/>.
 :::
 
-## Neural Network Weights
+## Sharing Weights in Matrix Multiplication
 
-So then, do you come up with an answer? What determines whether the quantization on neural network[^2] weights is good or bad?
+Now that we know how to share numbers and define how good a compression is, we can compress neural networks with greater confidence! I'll specifically focus on compressing weights involved in matrix multiplication and ignore how non-linearities might hide or extenuate errors.
 
-[^2]: I'm assuming a vanilla neural network with nothing fancy.
-
-In my way of thinking, we must first see what a neural network is doing. Ultimately I really care about whether the output is good or not.
-
-So is it that easy, do we quantize the weights, then compute metrics for the model to see if its still usable?
-
-Well, yeah.
-
-But how can we get a deeper intuition other than with validation testing comparison with the original network?
-
-First we must ask what then affects the output?
-
-SO, what affects the output? Well, the previous neural network layer. And what makes up a layer in a regular neural network? A linear layer with a non-linearity. So what's in the linear layer? A weight matrix multiplied by the input with a bias added elementwise.
-
-This line of reasoning is nothing crazy. To put this in math notation, if I had a three layer neural network where the first two layers had ReLU activations and the last was just linear, I'd have
+To give you some reason why I focus on matrix multiplies, take this three neural layer network
 
 <Math text="\text[ReLU]\left(\text[ReLU]\left(xW_1^T + b_1\right)W_2^T + b_2\right)W_3^T + b_3.\tag[2]" big/>
 
-Although other operations will end up changing the numbers, the matrix multiplication must first be satisfied as something that doesn't totally spiral the error out of control.
+where <Math text="W_i" /> are weights and <Math text="b_i" /> are biases at layer <Math text="i"/>. Almost all of the operations in the neural network that may effect the output (what we really care about) are matrix multiplies. So the output greatly depends on minimizing the compression error here.
 
-:::tip[think]
-How can I quantify error with respect to how the weight matrix is used? In other words, how can I quantify error with respect to the matrix multiplication? If I could assign a error number to a quantized weight matrix, I could then get an intuition for what types of weights/structure/patterns are fine and ones that lead to problems.
-:::
+## Factorizing Error
 
-## Size of error
+Ultimately I want to determine the size of the error between a weight matrix <Math text="W" /> and the quantized version <Math text="Q" />. The naive way to do it is to apply the same error I did with the image example: the error between each corresponding element.
 
-Ultimately I want to determine the size of the error between a weight matrix <Math text="W" /> and the compressed version <Math text="C" />. The naive way to do it is to apply the same error I did with the image example: the error between each corresponding element.
+However, that wouldn't account for what the matrix multiplication does with the numbers. It could be that the matrix multiplication extenuates or hides some element-wise error.
 
-But it may be the case that matrix multiplication hides or enhances some of the error. So in a way, measuring the elementwise deviation would be deceitful.
+So really what we want is the difference between how matrices transform an input vector <Math text="x" /> into an output <Math text="y" />. Or <Math text="Wx = y"/> is the operation with <Math text="y"/> being the output and <Math text="Qx = \hat[y]"/> as the quantized operation with <Math text="\hat[y]" /> as the new approximate output. The error is then the overall size of the difference between the exact output and approximate (<Math text="y - \hat[y]" />) and normalized by the exact (<Math text="y" />). I will represent the size of vectors as norms <Math text="||\cdot||" />. So the error can be written as
 
-:::tip[think]
-So I ask, what is matrix-vector multiplication really doing <Math text="Wx" />?
-:::
+<Math text="\text[error] &:= \frac[||y - \hat[y]||][||y||]\tag[3]" begin="align*" /> which looks very similar to the image error example (which was the deviation between the original and compressed pixels).
 
-Well, instead of thinking I could just do!
+If I represent the equation again with the matrix multiplication, I can do some simplification and rearranging as
 
 <Math text="
-\text[error] &= \frac[||Wx - Qx||][||Wx||]\\
-&= \frac[||Ex||][||Wx||]\\
-&= \frac[||EW^[-1]y||][||Wx||]\\
-&= \frac[||EW^[-1]y||][||y||]\\
-&\leq \frac[||E||||W^[-1]||||y||][||y||]\\
-&= \frac[||E||||W^[-1]||||y||][||y||]\\
-&= ||E||||W^[-1]||\\
-&= ||E||||W^[-1]||\frac[||W||][||W||]\\
-&= ||W||||W^[-1]||\frac[||E||][||W||]\\
-&= ||W||||W^[-1]||\frac[||W-Q||][||W||]
+\text[error] &:= \frac[||y - \hat[y]||][||y||]\\
+&= \frac[||Wx - Qx||][||Wx||] &&\text[substitute]\\
+&= \frac[||(W-Q)x||][||Wx||]\\
+&= \frac[||(W-Q)W^[-1]y||][||Wx||]&&\text[since ] x = W^[-1]y\\
+&\leq \frac[||W-Q|| \ ||W^[-1]|| \ ||y||][||Wx||]&&\text[since ] ||AB|| \leq ||A|| \ ||B||\\
+&= \frac[||W-Q|| \ ||W^[-1]|| \ ||Wx||][||Wx||]&&\text[substitute]\\
+&= ||W-Q|| \ ||W^[-1]||\\
+&= \frac[||W||][||W||] \ ||W-Q|| \ ||W^[-1]||\\
+&= \frac[||W-Q||][||W||] \ ||W|| \ ||W^[-1]||\tag[4]\\
 " begin="align*" />
 
-Just condition number times.
+Which leaves us with this general term <Math text="\frac[||W-Q||][||W||]"/> times the condition number <Math text="||W||||W^[-1]||" /> in <Math text="(4)"/>. This formulation was adapted from the lecture notes [CS 4220 Numerical Analysis](https://www.cs.cornell.edu/~bindel/class/cs4220-s15/lec/2015-02-04-notes.pdf) and my recollections from [MTH 451 Numerical Linear Algebra](https://math.oregonstate.edu/directory/adel-faridani).
 
-<!--
-Really what matrix-vector multiplication is a weighted combination of the columns of the matrix according to the input.
+:::note
+I will treat the norm on a matrix notated as <Math text="||\cdot||"/> as a [matrix operator norm](https://www.wikiwand.com/en/Matrix_norm) induced by the 1-norm.
 
-So really the column structure of the matrix is what we're after, not simply an element-wise sum which takes into account no structure.
+Using a vector norm on a matrix doesn't capture it's usable structure. The matrix operator norm takes into account that the matrix will be used in matrix multiplication.
 
-One way to think about this is through how an input <Math text="x" /> is transformed by the weight matrix <Math text="W" /> under matrix multiplication and normalized as
+I'd simply interpret it as the size of the most stretched vector after being transformed by the matrix.
+:::
 
-<Math text="\frac[||Wx||_1][||x||_1]\tag[3]" big /> where <Math text="||\cdot||_1" /> is the vector one-norm. You can directly interpret this as measuring how much the input has changed due to the matrix multiplication with the weight matrix.
+Importantly in <Math text="(4)" /> there is a term that depends on the weight matrix and the compressed matrix <Math text="\frac[||W-Q||][||W||]"/> and another term that only depends on the weight matrix <Math text="||W||||W^[-1]||" />. So no matter how low I can get the first term, the second term, depending only to the original weight matrix, might still contribute to the error.
 
-Then, in order to get a compact measure for the weight matrix, I can maximize <Math text="x" /> which leaves me with the matrix operator norm induced by the one-norm: take the absolute sum over the columns and take the max column sum, that's the norm. Intuitively, this measures the vector <Math text="x" /> that is most amplified by the matrix multiplication. You might consider if there are alternative measures.
+Applying the entire error term, we can visualize the error between the original weights and a compressed/quantized version.
 
-Now with this matrix operator norm, I can have a measure for how big the matrix is given that it's going to be used for matrix multiplication.
-
-Then, I can simply do the same difference of error, but this time with the matrix operator norm
-<Math text="\text[error] := \frac[||W - C||][||W||]\tag[4]" big/> which can be interpreted as how much does the error deviation affect the matrix multiplication, then that is the error!
-
-You might think this has been one massive tangent, and it kind of has, but this is how we can determine whether its a good idea to apply quantization to a certain weight matrix or if we should keep trying other methods or move on. -->
-
-## Error on different distributions
-
-So what matrices compress well and what do not? Now that we have an error metric, we can try a ton of different weight distributions that one may encounter and see if any structure does well and does terribly.
+:::important[Your turn]
+Select a distribution for the original weights and how much you'd like to quantize the weights by dragging the slider.
+:::
 
 <KMeansLive />
+
+As you can see as the more bits we quantize the weights for any of the distributions, the error drops.
+
+What is really fascinating is that the distribution with the outlier drops drastically in error with just a few bits. However the condition number remains massive (just dependent on the original weights).
+
+Why is that? Well it is still true if that one outlier is not encoder correctly, that the error will be quite large. But since k-means is quite sensitive to outliers, it quickly encoded a centroid just for the one outlier, rendering the condition number a red herring. Note that outlier are generally bad because ideally you'd like many weights to share, but at the price of catastrophic error, it is bearable.
+
+Also note that as the quantized weights get closer to zero, the distribution of weights approaches the same shape and colors as the original weights. I challenge the reader to see if [KL-Divergence](https://www.wikiwand.com/en/Kullback%E2%80%93Leibler_divergence) would be a good metric here.
+
+Overall, now we can figure out whether our real neural network weights can be quantized well or not beforehand and after quantization. Let's now apply quantization to a real neural network right in the browser!
 
 ## Applied to a real model
 
