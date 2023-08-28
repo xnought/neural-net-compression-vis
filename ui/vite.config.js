@@ -14,10 +14,10 @@ const config = defineConfig({
 					quantization: [
 						{
 							title: "Articles",
-							collapsible: false,
+							collapsible: true,
 							items: [
 								{
-									title: "Quantization",
+									title: "Visualizing Quantization Error",
 									to: "quant",
 								},
 							],
@@ -28,7 +28,7 @@ const config = defineConfig({
 				logo: "logo.png",
 			}),
 			siteConfig: {
-				title: "_",
+				title: " ",
 				description: " ",
 			},
 		}),

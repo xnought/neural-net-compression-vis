@@ -1,7 +1,7 @@
 ---
-title: _
+title: " "
 heroImage: logo.png
-tagline: Under the underscore
+tagline: " "
 actions:
     - label: View Articles
       type: primary
