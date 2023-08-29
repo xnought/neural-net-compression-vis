@@ -250,6 +250,8 @@ Draw on the left side blackboard a number and see how the model reconstructs you
 
 As you can see, with a small number of bits, the output reconstruction is terrible. But as you pass some threshold it becomes quite good and doesn't improve by too much.
 
+Also, the quantized models are about four times smaller than the original model!
+
 ## Conclusion
 
 Overall, you can represent your weights with less numbers than you previously thought through simple methods. Although you must be careful that the structure of your weights is not prone to extreme errors brought about through quantization!

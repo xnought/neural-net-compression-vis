@@ -25,6 +25,26 @@
 		);
 	}
 
+	/**
+	 * @param m {Sequential}
+	 * @returns {[number, number]} of the original and the compressed sizes
+	 */
+	function modelBits(m, bits = 0) {
+		let summed = 0;
+		let originalSummed = 0;
+		for (let i = 0; i < m.layers.length; i++) {
+			const layer = m.layers[i];
+			if (layer instanceof Linear) {
+				const weight = layer.weight;
+				const codebookSize = 2 ** bits * 32;
+				const indexesSize = weight.shape[0] * weight.shape[1] * 8;
+				summed += codebookSize + indexesSize;
+				originalSummed += weight.shape[0] * weight.shape[1] * 32;
+			}
+		}
+		return [originalSummed, summed];
+	}
+
 	async function loadAllModels(Model) {
 		const reqs = options.map((opt) => fetchStateDict(`ae/q${opt}.json`));
 		const stateDicts = await Promise.all(reqs);
@@ -125,6 +145,10 @@
 	}
 	$: selected = options[optionSelected];
 	$: if (mounted) updateSelected(optionSelected);
+	let og, comp;
+	$: if (mounted) {
+		[og, comp] = modelBits(model, +selected);
+	}
 </script>
 
 <div class="container">
@@ -187,6 +211,15 @@
 			/>
 		</div>
 	</div>
+</div>
+
+<br />
+
+<div class="label">
+	Original: {(og / 1024 ** 2).toFixed(3)} mega bytes
+</div>
+<div class="label">
+	Quantized: {(comp / 1024 ** 2).toFixed(3)} mega bytes
 </div>
 
 <style>
