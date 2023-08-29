@@ -6,6 +6,7 @@
 	import ErrorBar from "./ErrorBar.svelte";
 	import * as d3 from "d3";
 	import { pinv } from "./pinv";
+	import Katex from "./KaTeX.svelte";
 
 	const m = 20,
 		n = 20;
@@ -108,13 +109,20 @@
 {/if}
 <ErrorBar data={[{ label: "||W-Q||/||W||", error }]} />
 <div class="label">
-	Condition number: {condNum.toFixed(3)}
+	<Katex text="||W|| \ ||W^[-1]||" /> as condition number = {condNum.toFixed(
+		3
+	)}
+</div>
+
+<div class="label">
+	<Katex text="\left(||W||| \ |W^[-1]||\right)\left(||W-Q||/||W||\right)" /> as
+	combined error = {(error * condNum).toFixed(3)}
 </div>
 <div class="label">
-	Original Size: {(theoreticalTensorBits(data) / 8).toFixed(1)} bytes
+	Original Size = {(theoreticalTensorBits(data) / 8).toFixed(1)} bytes
 </div>
 <div class="label">
-	Quantized Size: {(theoreticalTensorBits(quant, bits) / 8).toFixed(1)} bytes
+	Quantized Size = {(theoreticalTensorBits(quant, bits) / 8).toFixed(1)} bytes
 </div>
 
 <style>

@@ -1,5 +1,5 @@
 ---
-title: Visualizing Quantization Error
+title: Visualizing Model Compression Error
 lastUpdate: August 2023
 ---
 
@@ -46,7 +46,7 @@ lastUpdate: August 2023
     }
 </style>
 
-The coolest models on the market are just too big for your measly computer's memory. But actually, you can apply compression methods and remove unnecessary data from the model. So how much is too much when it comes to compression? This article goes through some interactive examples to pump some intuition.
+Often, the most incredible models also happen to be the largest models. By making the model smaller, you and I can dream about running these models on our own machines. With model compression, we can reduce the size of the numbers in a model. This article runs through a simple way to quantize floating point numbers into smaller integers and the error we pay for it in matrix multiplies.
 
 ## Introduction
 
@@ -56,13 +56,13 @@ Modern deep learning is quite extraordinary. I don't need to convince you. You'v
 
 _From [Lexica](https://lexica.art/?q=cyberpunk+city)'s Aperture Model._
 
-These models generate detailed, complex, and creative outputs. And yet, when you boil things down they are just transforming the inputs over and over again until a desirable output. So it's not at all surprising that models like [Stable Diffusion XL](https://stability.ai/stablediffusion) have over 3 billion numbers (parameters) that transform your inputs in a sophisticated way.
+These models generate detailed, complex, and creative outputs. And yet, when you boil things down they are just transforming the inputs over and over again until a desirable output. It's not at all surprising that models like [Stable Diffusion XL](https://stability.ai/stablediffusion) have over 3 billion parameters that transform your inputs in a sophisticated way.
 
-Size enables amazing capabilities, but also limits who can run them. Most people don't have fast GPUs with lots of memory. Instead, we must dive into the art of compressing neural network parameters while not totally ruining the awesomeness of the model. That isn't just a side point, that is THE point.
-
-This article specifically uses the weight sharing scheme from [Deep Compression](https://arxiv.org/abs/1510.00149) to drastically reduce the size of my weights with little error (post-training). Read more!
+Size enables amazing capabilities, but also limits who can run them. Most people don't have fast GPUs with lots of memory. Instead, we must dive into the art of compressing neural network parameters while not totally ruining the learned structures of the model.
 
 ## Sharing as Compression
+
+In this article I'll use the weight sharing scheme from [Deep Compression](https://arxiv.org/abs/1510.00149) to drastically reduce the size of my weights with little error (post-training). To give you an idea of why sharing a few floating point numbers would be helpful, here's the situation.
 
 Suppose you owned 20 dogs. An army of golden retrievers. And also suppose you are on the market for dog toys.
 
@@ -74,27 +74,29 @@ Morale of the short story: sharing under constraints is reasonable. More than th
 
 ## Sharing Pixels
 
-Before we get to neural network weights, I'll take a quick detour through sharing pixels in an image to drastically reduce the size. It's too intuitive to pass up and is exactly what I'll do to the neural network parameters.
+Images and neural network weights are both just collections of numbers in the form of a tensor. So let's first look at the more intuitive image use-case.
+
+For image compression, the goal is to reduce the memory footprint while maintaining what the original image looked like.
 
 As you know, images are made up of tons of small colored squares: pixels. I'll start with a 880 pixels wide by 602 pixels tall image of this cutest golden retriever you've ever seen.
 
 <img src="dog.png" style="width: 300px;">
 
-In total, there are 4,824,160 colors in the image (<Math text="880 \cdot 602"/>) on for each pixel. Each color is represented by three numbers: <span style="color: rgb(255, 0, 0)">red</span>, <span style="color: rgb(0, 255, 0)">green</span>, and <span style="color: rgb(0, 0, 255)">blue</span> that mix together to make the color. In total this one image is storing nearly 15 million numbers! That is a lot!
+In total, there are 4,824,160 colors in the image (<Math text="880 \cdot 602"/>): one for each pixel. Each color is represented by three numbers: <span style="color: rgb(255, 0, 0)">red</span>, <span style="color: rgb(0, 255, 0)">green</span>, and <span style="color: rgb(0, 0, 255)">blue</span> that mix together to make that color. In total this one image is storing nearly 15 million numbers! That is quite a bit!
 
-To drastically reduce the memory, we will find the most important colors and share them.
+Instead of each pixel having a unique color, let's instead determine a few important colors and have all the other pixels share them. Exactly like the previous example with buying toys.
 
-One such way is through a summary of the data. For example through an average. Below, I've taken an average over all the pixels and assigned each pixel that average.
+First, I'll take an average over all the pixels to get the most important color. Making all the pixels share that one pixel I get:
 
 <KMeansImage selected={0}/>
 
-The compressed version looks nothing like the original, but the color isn't totally off.
+It is significantly smaller in terms of memory, but looks nothing like the dog.
 
-Now, what if I increased the number of averages I took to two? In other words, what if all the pixels had to share only two colors?
+Now, let's share two colors instead of just one.
 
 <KMeansImage selected={1}/>
 
-Even just after two shared colors, there the compressed image is starting to look like the dog with a fraction of the memory footprint!
+Starting to look like a dog!
 
 :::important[Your turn]
 Drag the slider to increase the number of colors to share.
@@ -102,15 +104,7 @@ Drag the slider to increase the number of colors to share.
 
 <KMeansImage selected={1} showSlider/>
 
-At 128 colors, the images start to look strikingly similar. And of course, compared to the original of ~5 million colors, we're representing this image at a massive budget!
-
-To convert these savings to actual usable numbers, I can quickly compute each file size.
-
-Remember, each pixel still needs to reference which of the 128 colors to use for the quantized version. So each pixel is represented as a one unsigned byte integer which then indexes into the array of 128 colors.
-
-Since there are 4,824,160 pixels and each has one index into the 128 shared colors (each represented by RGB), the compressed image contains <Math text="128 \cdot 3 + 4[,]824[,]160 = 4[,]824[,]544" /> numbers.
-
-Now the original was roughly 15 million numbers. That is roughly a three times space saving and I can barely tell the difference between the images.
+After sharing just 256 colors, the images look remarkably similar. And we're only storing 256 colors!
 
 :::note
 I've left out some information on how to compute these multiple averages.
@@ -120,17 +114,21 @@ I've left out some information on how to compute these multiple averages.
 However, if you must know I use the [k-means algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) on the image pixels to select out the top k average colors and assign each of the original pixels the closest pixel from the averages.
 
 Check out [image.ipynb]({repo}/blob/main/notebooks/image.ipynb) to see how I used k-means on the images.
+
+So instead of storing three numbers per each pixel, I store one number that indexes into the k average colors based on the closest color. In essence, the pixels share the k most important colors.
+
+Storing one instead of three colors roughly minimizes the image size by three times (plus the k important colors).
 :::
 
 ## Quantifying Error
 
-At what point did you think that the quantized image looked close to the original? Answering for myself, it looked closer to the original as the number of shared colors increased.
+So I think you get the point now. With can capture the top information from the data and only use that. This is of course is what quantization refers to.
 
-But what does it really mean that it looked closer to the original? Do you see the issue here? If we rely on subjective experience that cannot be parsed, we've got a problem.
+This method is exactly the same for neural network weights. But how do we know if the neural network weights are correctly compressed? For the image example, you can visually tell, but for numbers in a tensor, this is not so easy.
 
-It's hard to parse the human brain, so let's make an assumption.
+Naturally, I'll make assumptions to make an error metric to tell us when the compressed data is close to the original.
 
-I could assume that the difference between the compressed colors and the original colors is large, the compressed image will not look like the original. So an error metric per each pixel.
+For images, this is intuitive: take the difference between the pixels and see how wrong the compressed version is.
 
 :::important[Your turn]
 Drag the slider increase the number of colors quantized. Observe the pixels that are deep red for high error.
@@ -138,83 +136,101 @@ Drag the slider increase the number of colors quantized. Observe the pixels that
 
 <ImageErrorWithNumber />
 
-As you can see, when the images look very similar, the red error is almost nonexistent. I can further summarize the error with an average into one number (interpreted as the average difference between the compressed and original colors per pixel).
+As you can see, when the images look very similar, the red error is almost nonexistent. I can further summarize the error with an average into one number.
+
+Now we have some conception of how good the compression was!
 
 :::note
-The math notation is not necessary, but may clarify whats going on.
+For each pixel at (location <Math text="i" />) I find the difference between the corresponding color channels of the compressed/quantized image <Math text="Q" /> and the original image <Math text="W" />. For example if the original color was black <Math text="(0,0,0)"/> and the quantized color was white <Math text="(255,255,255)"/>, the summed error would be <Math text="|255-0| + |255-0| + |255-0| = 765" /> for that one pixel.
 
-For each pixel at (location <Math text="i" />) I find the difference between the corresponding color channels of the compressed/quantized image <Math text="Q" /> and the original image <Math text="W" />. For example if the compressed color was [0,0,0] white and the original color was [255,255,255] black the summed error would be |255-0| + |255-0| + |255-0| or {255\*3} for that pixel. This would be an example of the maximum amount of error (pixel should have been black, but the compressed is white).
-
-I store all these errors for all the pixels in an error matrix <Math text="E"/> defined by <Math text="E_[i] = \sum_[c=1]^[3] |Q_[i, c] - W_[i,c]| \tag{1}" big /> where <Math text="i" /> is the pixel index and <Math text="c"/> is the color channel index.
+I store each error term in this <Math text="E"/> matrix where each number is the error <Math text="E_[i] = \sum_[c=1]^[3] |W_[i, c] - Q_[i,c]| \tag{1}" big /> such that <Math text="i" /> is the pixel index and <Math text="c"/> is the color channel index.
 
 This error image <Math text="E" /> is what you see in red above. Then I simply average over these error matrix values from <Math text="(1)" /> to get the **Average Error** as <Math text="\frac[1][N]\sum_[i=1]^[N] E_i"/>.
+
+For the future, note that this form is very similar to the vector 1-norm of the difference between <Math text="W" /> and <Math text="Q" />.
 :::
 
-## Sharing Weights in Matrix Multiplication
+## Matrix Multiplication
 
-Now that we know how to share numbers and define how good a compression is, we can compress neural networks with greater confidence! I'll specifically focus on compressing weights involved in matrix multiplication and ignore how non-linearities might hide or extenuate errors.
+For neural network weights, we aren't viewing them as images. So what makes their compression good or not?
 
-To give you some reason why I focus on matrix multiplies, take this three neural layer network
+Take this three layer neural network
 
 <Math text="\text[ReLU]\left(\text[ReLU]\left(xW_1^T + b_1\right)W_2^T + b_2\right)W_3^T + b_3.\tag[2]" big/>
 
-where <Math text="W_i" /> are weights and <Math text="b_i" /> are biases at layer <Math text="i"/>. Almost all of the operations in the neural network that may effect the output (what we really care about) are matrix multiplies. So the output greatly depends on minimizing the compression error here.
+where <Math text="W_i" /> are weights and <Math text="b_i" /> are biases at layer <Math text="i"/>.
 
-## Factorizing Error
+Almost all of the operations in the neural network that may effect the output (what we really care about) are matrix multiplies. So the output greatly depends on minimizing the compression error here.
 
-Ultimately I want to determine the size of the error between a weight matrix <Math text="W" /> and the quantized version <Math text="Q" />. The naive way to do it is to apply the same error I did with the image example: the error between each corresponding element.
+Doing an element-wise difference would not capture what matrix multiplication is actually doing. What I mean to say is that error may be hidden or amplified by the matrix multiply operation. Something that we could not measure my doing element-wise differences like before.
 
-However, that wouldn't account for what the matrix multiplication does with the numbers. It could be that the matrix multiplication extenuates or hides some element-wise error.
-
-So really what we want is the difference between how matrices transform an input vector <Math text="x" /> into an output <Math text="y" />. Or <Math text="Wx = y"/> is the operation with <Math text="y"/> being the output and <Math text="Qx = \hat[y]"/> as the quantized operation with <Math text="\hat[y]" /> as the new approximate output. The error is then the overall size of the difference between the exact output and approximate (<Math text="y - \hat[y]" />) and normalized by the exact (<Math text="y" />). I will represent the size of vectors as norms <Math text="||\cdot||" />. So the error can be written as
-
-<Math text="\text[error] &:= \frac[||y - \hat[y]||][||y||]\tag[3]" begin="align*" /> which looks very similar to the image error example (which was the deviation between the original and compressed pixels).
-
-If I represent the equation again with the matrix multiplication, I can do some simplification and rearranging as
-
-<Math text="
-\text[error] &:= \frac[||y - \hat[y]||][||y||]\\
-&= \frac[||Wx - Qx||][||Wx||] &&\text[substitute]\\
-&= \frac[||(W-Q)x||][||Wx||]\\
-&= \frac[||(W-Q)W^[-1]y||][||Wx||]&&\text[since ] x = W^[-1]y\\
-&\leq \frac[||W-Q|| \ ||W^[-1]|| \ ||y||][||Wx||]&&\text[since ] ||AB|| \leq ||A|| \ ||B||\\
-&= \frac[||W-Q|| \ ||W^[-1]|| \ ||Wx||][||Wx||]&&\text[substitute]\\
-&= ||W-Q|| \ ||W^[-1]||\\
-&= \frac[||W||][||W||] \ ||W-Q|| \ ||W^[-1]||\\
-&= \frac[||W-Q||][||W||] \ ||W|| \ ||W^[-1]||\tag[4]\\
-" begin="align*" />
-
-Which leaves us with this general term <Math text="\frac[||W-Q||][||W||]"/> times the condition number <Math text="||W||||W^[-1]||" /> in <Math text="(4)"/>. This formulation was adapted from the lecture notes [CS 4220 Numerical Analysis](https://www.cs.cornell.edu/~bindel/class/cs4220-s15/lec/2015-02-04-notes.pdf).
-
-:::note
-I will treat the norm on a matrix notated as <Math text="||\cdot||"/> as a [matrix operator norm](https://www.wikiwand.com/en/Matrix_norm) induced by the 1-norm.
-
-Using a vector norm on a matrix doesn't capture it's usable structure. The matrix operator norm takes into account that the matrix will be used in matrix multiplication.
-
-I'd simply interpret it as the size of the most stretched vector after being transformed by the matrix.
+:::warning
+Things are about to get more mathematical. Not because they needs to be, but because it's easier for me to write about in a concise way. Be warned. (and maybe consider reviewing matrix and vector norms)
 :::
 
-Importantly in <Math text="(4)" /> there is a term that depends on the weight matrix and the compressed matrix <Math text="\frac[||W-Q||][||W||]"/> and another term that only depends on the weight matrix <Math text="||W||||W^[-1]||" />. So no matter how low I can get the first term, the second term, depending only to the original weight matrix, might still contribute to the error.
+With matrix multiplication we are doing a linear combination of the columns of the matrix defined by each number in the vector. Namely, <Math text="Wx = y" /> where <Math text="W" /> is the matrix, <Math text="x" /> is the column vector, and <Math text="y" /> is the output of the matrix multiply. Alternatively, think of <Math text="W" /> as transforming <Math text="x" /> into <Math text="y" />.
+
+I can also define how the quantized matrix <Math text="Q" /> transforms the input <Math text="x" /> into some approximate output <Math text="\hat[y]" /> which won't quite be the same as the exact <Math text="y" />. I can then express the differences between the outputs <Math text="y" /> and <Math text="\hat[y]" /> in a single error term
+<Math text="\text[error] &:= \frac[||y - \hat[y]||_1][||y||_1]\tag[3]" begin="align*" /> which is really just how big is the difference between the original output and compressed output after matrix multiplication, then normalized to be between 0 and 1.
+
+:::note
+I use the vector 1-norm here denoted by <Math text="||\cdot||" /> to give me the size of a vector.
+:::
+
+And since <Math text="Wx = y" /> and <Math text="Qx = \hat[y]" /> I can write the equation <Math text="(3)" /> only in terms of the inputs as
+
+<Math text="
+\frac[||y - \hat[y]||][||y||] = \frac[||Wx - Qx||][||Wx||]\tag[4]\\
+" begin="align*" />
+
+simply by how I defined things.
+
+As is turns out, I can factor this error term into a term that only contains <Math text="W" /> and one other that contains both <Math text="Q" /> and <Math text="W" /> through the steps
+<Math begin="align*" 
+text="
+\frac[||Wx - Qx||][||Wx||] &= \frac[||(W-Q)x||][||Wx||]\\
+&= \frac[||(W-Q)W^[-1]y||][||Wx||]&&\text[since ] x = W^[-1]y\\
+&\leq \frac[||W-Q|| \ ||W^[-1]|| \ ||y||][||Wx||]&&\text[since ] ||AB|| \leq ||A|| \ ||B||\\
+&= \frac[||W-Q|| \ ||W^[-1]|| \ ||Wx||][||Wx||]&&\text[since ] ||Wx|| = ||y||\\
+&= ||W-Q|| \ ||W^[-1]||\\
+&= \frac[||W||][||W||] \ ||W-Q|| \ ||W^[-1]||\\
+&= \left(||W|| \ ||W^[-1]||\right) \left(\frac[||W-Q||][||W||]\right). \tag[5]\\
+" 
+/>
+
+and specifically where the norm applied to a matrix is the matrix operator norm induced by the 1-norm.
+
+:::note
+First of all, formulation was adapted from the lecture notes [CS 4220 Numerical Analysis](https://www.cs.cornell.edu/~bindel/class/cs4220-s15/lec/2015-02-04-notes.pdf).
+
+Second, I use the matrix operator norm because the vector norm of a matrix doesn't capture the important information. The matrix operator norm tells me how the matrix transforms vectors under matrix multiplication which is exactly what I need.
+:::
 
 Applying the entire error term, we can visualize the error between the original weights and a compressed/quantized version.
 
+The first term defined by only <Math text="W" /> as <Math text="||W|| \ ||W^[-1]||" /> is a very useful number in many applications for linear problems: the condition number. The second term looks quite similar to the image pixel error case as the difference between the matrices with a norm applied as <Math text="\frac[||W-Q||][||W||]" />.
+
+Let's see what error looks like on some different weight matrices!
+
 :::important[Your turn]
-Select a distribution for the original weights and how much you'd like to quantize the weights by dragging the slider.
+Select a distribution for the weights and how much you'd like to quantize the weights by dragging the slider. Observe the error terms and when the weights look similar.
 :::
 
 <KMeansLive />
 
-As you can see as the more bits we quantize the weights for any of the distributions, the error drops.
+First of all, not all matrices have the same condition number. The distribution with the outlier has a relatively large condition number which signals to me that the error will be amplified by that much.
 
-What is really fascinating is that the distribution with the outlier drops drastically in error with just a few bits. However the condition number remains massive (just dependent on the original weights).
+Nonetheless, the error drops quickly the more weights we share, the more bits we use.
 
-Why is that? Well it is still true if that one outlier is not encoder correctly, that the error will be quite large. But since k-means is quite sensitive to outliers, it quickly encoded a centroid just for the one outlier, rendering the condition number a red herring. Note that outlier are generally bad because ideally you'd like many weights to share, but at the price of catastrophic error, it is bearable.
+What's quite interesting is that despite the high condition number in the outlier case, the error drops much quicker than the other distributions as we increase the bits. I speculate that it's because k-means is sensitive (to a fault) to outliers. So it used an entire number in the shared weights for that one outlier weight. In general this is bad, but weirdly is good if you just want to minimize error and the underlying distribution isn't too crazy.
 
-Also note that as the quantized weights get closer to zero, the distribution of weights approaches the same shape and colors as the original weights. I challenge the reader to see if [KL-Divergence](https://www.wikiwand.com/en/Kullback%E2%80%93Leibler_divergence) would be a good metric here.
+Alas! A quick way to visualize and quantify error for weights in neural networks! Even before quantizing your weights, you can quickly compute the condition number to see if you'll run into problems.
 
-Overall, now we can figure out whether our real neural network weights can be quantized well or not beforehand and after quantization. Let's now apply quantization to a real neural network right in the browser!
+For linear quantization strategies, the condition number probably is vital. With k-means, we get away with masking it.
 
 ## More layers
+
+Okay, but what about more than just one weight matrix.
 
 Instead of just one layer of weights, now I'll scale up to multiple layers with a real usable model.
 
@@ -248,20 +264,22 @@ Draw on the left side blackboard a number and see how the model reconstructs you
 
 <AE />
 
-As you can see, with a small number of bits, the output reconstruction is terrible. But as you pass some threshold it becomes quite good and doesn't improve by too much.
+As you can see, with a small number of bits, the output reconstruction is terrible. But as you pass some threshold it becomes quite good and doesn't improve by too much. Very importantly, the quantized models are four times smaller than the original.
 
-Also, the quantized models are about four times smaller than the original model!
-
-This begs the question, based on our error formulation in the previous article, can we predict whether the quantization will spiral out of control for a multi-layer network?
-
-My thought is definitely yes. I can easily extend the previous error formulation by taking an aggregate function over all the condition number for the weights in the model. For example, the maximum condition number for the original autoencoder is 50590.6171875 ([ae_cond.ipynb](https://github.com/xnought/docs/blob/main/notebooks/ae_cond.ipynb)). Which signals to me that there are spiked values different from the rest that are driving the matrix multiplication to skew the values even for small perturbations.
-
-But k-means is very sensitive to outliers meaning that it ends up hiding the condition number once again very quickly. Driving the entire error down to near 0. This makes sense given that the smaller number of bits did quite poorly and likely could not win the battle against the conditioning. Whereas with more bits, the k-means could waste centroids on the spiked values and drive the entire error close to nothing. More analysis will need to be done to confirm these hypotheses.[^1]
-
-[^1]: It may be interesting to introduce the condition number for each weight layer as a generalizer in the loss function when training and minimize the collective product or sum.
+Despite this neural network having a high maximum condition number (computed by taking the condition number over each layer and taking the max [ae_cond.ipynb](https://github.com/xnought/docs/blob/main/notebooks/ae_cond.ipynb)), using k-means quantization, the outputs look quite good: the reconstruction is accurate. I speculate again that with extra shared numbers to spare, k-means was sensitive tot he outlier which caused the high condition number, thereby masking the large effects.
 
 ## Conclusion
 
-Overall, you can represent your weights with less numbers than you previously thought through simple methods. Although you must be careful that the structure of your weights is not prone to extreme errors brought about through quantization!
+That's all folks! This journey was a bit scattered, but ultimately I did dive into what makes a good compression of weights with how I thought it should be. Perhaps others will figure out if conditioning is vital or not to truly have some predictive power whether quantization will succeed or not.
 
-One should not simply see if the weights are element-wise similar, taking into account what the weights are used for is as important when quantifying error after quantization.
+With all that being said, yes it's possible to drastically reduce the number of weights you use and yes non-linear techniques like k-means skirts amplification of error precisely for why people usually don't use is: sensitivity to outliers.
+
+Until next time :smile:.
+
+## Acknowledgments
+
+-   I thank myself [Donny Bertucci](https://donnybertucci.com) for writing the article and [Adam Perer](https://perer.org/) for discussing ideas and giving me valuable feedback during the 2023 Summer at Carnegie Mellon University
+-   Inspiration to even think to cover this topic from [here](https://www.youtube.com/watch?v=AlASZb93rrc) which evidently is by the author of that Deep Compression Paper I referenced earlier
+-   [Observable Plot](https://observablehq.com/plot/) was extremely useful
+-   [SveltePress](https://sveltepress.site/) is really awesome out of the box
+-   [KaTeX](https://katex.org/) for math equations

@@ -17,7 +17,7 @@ const config = defineConfig({
 							collapsible: true,
 							items: [
 								{
-									title: "Visualizing Quantization Error",
+									title: "Visualizing Model Compression Error",
 									to: "quant",
 								},
 							],
