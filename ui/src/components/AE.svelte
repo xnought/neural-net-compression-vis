@@ -128,6 +128,15 @@
 </script>
 
 <div class="container">
+	<input
+		type="range"
+		min="0"
+		max={options.length - 1}
+		bind:value={optionSelected}
+	/>
+	<span class="label">{selected} bits</span>
+</div>
+<div class="container">
 	<div>
 		<div class="label">Input | You drag to draw!</div>
 		<div>
@@ -178,16 +187,6 @@
 			/>
 		</div>
 	</div>
-</div>
-
-<div class="container">
-	<input
-		type="range"
-		min="0"
-		max={options.length - 1}
-		bind:value={optionSelected}
-	/>
-	<span class="label">{selected} bits</span>
 </div>
 
 <style>

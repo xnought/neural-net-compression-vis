@@ -214,6 +214,44 @@ Also note that as the quantized weights get closer to zero, the distribution of 
 
 Overall, now we can figure out whether our real neural network weights can be quantized well or not beforehand and after quantization. Let's now apply quantization to a real neural network right in the browser!
 
-## Applied to a real model
+## More layers
+
+Instead of just one layer of weights, now I'll scale up to multiple layers with a real usable model.
+
+I'll use a simple autoencoder architecture takes takes images of handwritten digits (0 through 9) and attempts to reconstruct the image after a bottleneck.
+
+In [PyTorch](https://pytorch.org/docs/stable/index.html) I made a simple autoencoder with 5 layers with 2,148,832 total parameters.
+
+```python
+import torch
+model = torch.nn.Sequential(
+    torch.nn.Linear(28*28, 1000),
+    torch.nn.ReLU(),
+    torch.nn.Linear(1000, 256),
+    torch.nn.ReLU(),
+    torch.nn.Linear(256, 256),
+    torch.nn.ReLU(),
+    torch.nn.Linear(256, 1000),
+    torch.nn.ReLU(),
+    torch.nn.Linear(1000, 28*28),
+    torch.nn.Sigmoid()
+)
+```
+
+The training and definitions are in [mnist_autoencoder.ipynb](https://github.com/xnought/docs/blob/main/notebooks/mnist_autoencoder.ipynb) and the quantization is in [quantized_mnist_autoencoder.ipynb](https://github.com/xnought/docs/blob/main/notebooks/quantized_mnist_autoencoder.ipynb) if you're interested.
+
+I quantized the model's weights and biases. The actual models have been loaded in javascript. Try it for yourself!
+
+:::important[Your turn]
+Draw on the left side blackboard a number and see how the model reconstructs your digit. Drag the slider to change the level of quantization.
+:::
 
 <AE />
+
+As you can see, with a small number of bits, the output reconstruction is terrible. But as you pass some threshold it becomes quite good and doesn't improve by too much.
+
+## Conclusion
+
+Overall, you can represent your weights with less numbers than you previously thought through simple methods. Although you must be careful that the structure of your weights is not prone to extreme errors brought about through quantization!
+
+One should not simply see if the weights are element-wise similar, taking into account what the weights are used for is as important when quantifying error after quantization.
