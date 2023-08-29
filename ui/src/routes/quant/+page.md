@@ -252,6 +252,12 @@ As you can see, with a small number of bits, the output reconstruction is terrib
 
 Also, the quantized models are about four times smaller than the original model!
 
+This begs the question, based on our error formulation in the previous article, can we predict whether the quantization will spiral out of control for a multi-layer network?
+
+My thought is definitely yes. I can easily extend the previous error formulation by taking an aggregate function over all the condition number for the weights in the model. For example, the maximum condition number for the original autoencoder is 50590.6171875 ([ae_cond.ipynb](https://github.com/xnought/docs/blob/main/notebooks/ae_cond.ipynb)). Which signals to me that there are spiked values different from the rest that are driving the matrix multiplication to skew the values even for small perturbations.
+
+But k-means is very sensitive to outliers meaning that it ends up hiding the condition number once again very quickly. Driving the entire error down to near 0.
+
 ## Conclusion
 
 Overall, you can represent your weights with less numbers than you previously thought through simple methods. Although you must be careful that the structure of your weights is not prone to extreme errors brought about through quantization!
