@@ -46,7 +46,7 @@ lastUpdate: August 2023
     }
 </style>
 
-The coolest models on the market are just too big for your measly computer's memory. But actually, you can apply compression methods and run these models for yourself. This article motivates a simple method to compress your model (weight sharing quantization via k-means) while visualizing the error you incur.
+The coolest models on the market are just too big for your measly computer's memory. But actually, you can apply compression methods and remove unnecessary data from the model. So how much is too much when it comes to compression? This article goes through some interactive examples to pump some intuition.
 
 ## Introduction
 
@@ -58,9 +58,9 @@ _From [Lexica](https://lexica.art/?q=cyberpunk+city)'s Aperture Model._
 
 These models generate detailed, complex, and creative outputs. And yet, when you boil things down they are just transforming the inputs over and over again until a desirable output. So it's not at all surprising that models like [Stable Diffusion XL](https://stability.ai/stablediffusion) have over 3 billion numbers (parameters) that transform your inputs in a sophisticated way.
 
-Size enables amazing capabilities, but also limits who can run them. Most people don't have fast GPUs with lots of memory. Instead, we must dive into the art of compressing neural network parameters while not totally ruining the awesomeness of the model.
+Size enables amazing capabilities, but also limits who can run them. Most people don't have fast GPUs with lots of memory. Instead, we must dive into the art of compressing neural network parameters while not totally ruining the awesomeness of the model. That isn't just a side point, that is THE point.
 
-This article specifically uses the weight sharing scheme from [Deep Compression](https://arxiv.org/abs/1510.00149) to drastically reduce the size of my weights with little error (post-training).
+This article specifically uses the weight sharing scheme from [Deep Compression](https://arxiv.org/abs/1510.00149) to drastically reduce the size of my weights with little error (post-training). Read more!
 
 ## Sharing as Compression
 
