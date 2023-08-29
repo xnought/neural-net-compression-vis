@@ -119,7 +119,7 @@ I've left out some information on how to compute these multiple averages.
 
 However, if you must know I use the [k-means algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) on the image pixels to select out the top k average colors and assign each of the original pixels the closest pixel from the averages.
 
-Check out the [Python Notebook]({repo}/blob/main/notebooks/image.ipynb) to see how I used k-means on the images.
+Check out [image.ipynb]({repo}/blob/main/notebooks/image.ipynb) to see how I used k-means on the images.
 :::
 
 ## Quantifying Error
@@ -184,7 +184,7 @@ If I represent the equation again with the matrix multiplication, I can do some 
 &= \frac[||W-Q||][||W||] \ ||W|| \ ||W^[-1]||\tag[4]\\
 " begin="align*" />
 
-Which leaves us with this general term <Math text="\frac[||W-Q||][||W||]"/> times the condition number <Math text="||W||||W^[-1]||" /> in <Math text="(4)"/>. This formulation was adapted from the lecture notes [CS 4220 Numerical Analysis](https://www.cs.cornell.edu/~bindel/class/cs4220-s15/lec/2015-02-04-notes.pdf) and my recollections from [MTH 451 Numerical Linear Algebra](https://math.oregonstate.edu/directory/adel-faridani).
+Which leaves us with this general term <Math text="\frac[||W-Q||][||W||]"/> times the condition number <Math text="||W||||W^[-1]||" /> in <Math text="(4)"/>. This formulation was adapted from the lecture notes [CS 4220 Numerical Analysis](https://www.cs.cornell.edu/~bindel/class/cs4220-s15/lec/2015-02-04-notes.pdf).
 
 :::note
 I will treat the norm on a matrix notated as <Math text="||\cdot||"/> as a [matrix operator norm](https://www.wikiwand.com/en/Matrix_norm) induced by the 1-norm.
@@ -256,7 +256,9 @@ This begs the question, based on our error formulation in the previous article, 
 
 My thought is definitely yes. I can easily extend the previous error formulation by taking an aggregate function over all the condition number for the weights in the model. For example, the maximum condition number for the original autoencoder is 50590.6171875 ([ae_cond.ipynb](https://github.com/xnought/docs/blob/main/notebooks/ae_cond.ipynb)). Which signals to me that there are spiked values different from the rest that are driving the matrix multiplication to skew the values even for small perturbations.
 
-But k-means is very sensitive to outliers meaning that it ends up hiding the condition number once again very quickly. Driving the entire error down to near 0.
+But k-means is very sensitive to outliers meaning that it ends up hiding the condition number once again very quickly. Driving the entire error down to near 0. This makes sense given that the smaller number of bits did quite poorly and likely could not win the battle against the conditioning. Whereas with more bits, the k-means could waste centroids on the spiked values and drive the entire error close to nothing. More analysis will need to be done to confirm these hypotheses.[^1]
+
+[^1]: It may be interesting to introduce the condition number for each weight layer as a generalizer in the loss function when training and minimize the collective product or sum.
 
 ## Conclusion
 
