@@ -9,6 +9,7 @@ lastUpdate: August 2023
     import ImageErrorWithNumber from "../../components/ImageErrorWithNumber.svelte";
     import Math from "../../components/KaTeX.svelte";
     import KMeansLive from "../../components/KMeansLive.svelte";
+    import Shared from "../../components/Shared.svelte";
     import AE from "../../components/AE.svelte";
     const repo = "https://github.com/xnought/docs";
 </script>
@@ -17,6 +18,10 @@ lastUpdate: August 2023
         width: 100%;
         border-radius: 5px;
         box-shadow: 0px 0px 2px 2px #00000020;
+    }
+    .no-style {
+        border-radius: none;
+        box-shadow: none;
     }
     .caption {
         font-size: 12px;
@@ -46,7 +51,7 @@ lastUpdate: August 2023
     }
 </style>
 
-Often, the most incredible models also happen to be the largest models. By making the model smaller, you and I can dream about running these models on our own machines. With model compression, we can reduce the size of the numbers in a model. This article runs through a simple way to quantize floating point numbers into smaller integers and the error we pay for it in matrix multiplies.
+Often, the most incredible machine learning models also happen to be the largest. By making the model smaller, you and I can dream about running these models on our own machines. With model compression, we can reduce the size of the numbers in a model. This article runs through a simple way to quantize floating point numbers into smaller integers and the error we pay for it in matrix multiplies.
 
 ## Introduction
 
@@ -98,6 +103,8 @@ Now, let's share two colors instead of just one.
 
 Starting to look like a dog!
 
+So what happens when we increase beyond two colors? Let's try!
+
 :::important[Your turn]
 Drag the slider to increase the number of colors to share.
 :::
@@ -114,11 +121,13 @@ I've left out some information on how to compute these multiple averages.
 However, if you must know I use the [k-means algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) on the image pixels to select out the top k average colors and assign each of the original pixels the closest pixel from the averages.
 
 Check out [image.ipynb]({repo}/blob/main/notebooks/image.ipynb) to see how I used k-means on the images.
-
-So instead of storing three numbers per each pixel, I store one number that indexes into the k average colors based on the closest color. In essence, the pixels share the k most important colors.
-
-Storing one instead of three colors roughly minimizes the image size by three times (plus the k important colors).
 :::
+
+Instead of storing three numbers per pixel, I store one that indexes into the shared important color pixels.
+
+<Shared />
+
+Above, the <span style="orange" >orange</span> window below shows a small portion of the pixels at eight color compression. Each pixel is just a number that indexes into the actual color. Hover over the image to move the window!
 
 ## Quantifying Error
 
