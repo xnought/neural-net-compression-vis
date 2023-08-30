@@ -63,12 +63,12 @@
 			const G = d[i + 1];
 			const B = d[i + 2];
 			const key = `rgb(${R},${G},${B})`;
-			json.push({ R, G, B, index: codebook[key] });
+			json.push({ R, G, B, index: codebook[key] ?? -1 });
 		}
 		return json;
 	}
 	function read(x, y, windowSize = 3) {
-		if (x > width - windowSize || y > height - windowSize) return;
+		// if (x > width - windowSize || y > height - windowSize) return;
 		const d = canvasCtx.getImageData(x, y, windowSize, windowSize).data;
 		data = toJson(d);
 	}
@@ -114,23 +114,25 @@
 						{@const color = `rgb(${d.R}, ${d.G}, ${d.B})`}
 						{@const textOffset = square / 2}
 						{@const textSize = 3}
-						<rect
-							x={i * square}
-							y={j * square}
-							width={square}
-							height={square}
-							fill={color}
-							stroke="white"
-							stroke-width={1}
-							stroke-opacity={0.2}
-						/>
-						<text
-							x={i * square + textOffset}
-							y={j * square + textOffset + textSize}
-							fill="white"
-							style="font-size: 10px; font-family: menlo; font-weight: 200;"
-							text-anchor="middle">{d.index}</text
-						>
+						{#if d.index !== -1}
+							<rect
+								x={i * square}
+								y={j * square}
+								width={square}
+								height={square}
+								fill={color}
+								stroke="white"
+								stroke-width={1}
+								stroke-opacity={0.2}
+							/>
+							<text
+								x={i * square + textOffset}
+								y={j * square + textOffset + textSize}
+								fill="white"
+								style="font-size: 10px; font-family: menlo; font-weight: 200;"
+								text-anchor="middle">{d.index}</text
+							>
+						{/if}
 					{/each}
 				{/each}
 			{/if}
