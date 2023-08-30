@@ -127,7 +127,7 @@ Instead of storing three numbers per pixel, I store one that indexes into the sh
 
 <Shared />
 
-Above, the <span style="color:salmon;" >window</span> above shows a small portion of the pixels at eight color compression. Each pixel is just a number that indexes into the actual color. Hover over the image to move the mini <span style="color:salmon;" >window</span>!
+Above, the <span style="color:salmon;" >window</span> shows a small portion of the pixels at eight color compression. As you can see, each pixel is a single number that indexes into the shared colors. Hover over the image to move the mini <span style="color:salmon;" >window</span>!
 
 ## Quantifying Error
 
