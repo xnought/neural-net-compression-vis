@@ -12,6 +12,7 @@
 		svgHeight = 125;
 	let mouseX = 200,
 		mouseY = 85;
+	let windowColor = "salmon";
 
 	function drawImage(ctx, image) {
 		ctx.imageSmoothingEnabled = false;
@@ -93,17 +94,17 @@
 			width={windowSize}
 			height={windowSize}
 			fill="none"
-			stroke="orange"
+			stroke={windowColor}
 			stroke-width={2}
 		/>
 	</svg>
 
 	<div>
-		<div style="color: orange; margin-bottom: 5px;">Magnified</div>
+		<div style="color: {windowColor}; margin-bottom: 5px;">Magnified</div>
 		<svg
 			width={svgWidth}
 			height={svgHeight}
-			style="outline: orange solid 2px;"
+			style="outline: {windowColor} solid 2px;"
 		>
 			{#if data}
 				{#each { length: windowSize } as _, i}

@@ -127,7 +127,7 @@ Instead of storing three numbers per pixel, I store one that indexes into the sh
 
 <Shared />
 
-Above, the <span style="orange" >orange</span> window below shows a small portion of the pixels at eight color compression. Each pixel is just a number that indexes into the actual color. Hover over the image to move the window!
+Above, the <span style="color:salmon;" >window</span> above shows a small portion of the pixels at eight color compression. Each pixel is just a number that indexes into the actual color. Hover over the image to move the mini <span style="color:salmon;" >window</span>!
 
 ## Quantifying Error
 
@@ -180,7 +180,7 @@ Things are about to get more mathematical. Not because they needs to be, but bec
 With matrix multiplication we are doing a linear combination of the columns of the matrix defined by each number in the vector. Namely, <Math text="Wx = y" /> where <Math text="W" /> is the matrix, <Math text="x" /> is the column vector, and <Math text="y" /> is the output of the matrix multiply. Alternatively, think of <Math text="W" /> as transforming <Math text="x" /> into <Math text="y" />.
 
 I can also define how the quantized matrix <Math text="Q" /> transforms the input <Math text="x" /> into some approximate output <Math text="\hat[y]" /> which won't quite be the same as the exact <Math text="y" />. I can then express the differences between the outputs <Math text="y" /> and <Math text="\hat[y]" /> in a single error term
-<Math text="\text[error] &:= \frac[||y - \hat[y]||_1][||y||_1]\tag[3]" begin="align*" /> which is really just how big is the difference between the original output and compressed output after matrix multiplication, then normalized to be between 0 and 1.
+<Math text="\text[error] &:= \frac[||y - \hat[y]||][||y||]\tag[3]" begin="align*" /> which is really just how big is the difference between the original output and compressed output after matrix multiplication, then normalized to be between 0 and 1.
 
 :::note
 I use the vector 1-norm here denoted by <Math text="||\cdot||" /> to give me the size of a vector.
