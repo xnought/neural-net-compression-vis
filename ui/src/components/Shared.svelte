@@ -145,7 +145,7 @@
 			<br />
 			{#each Object.keys(codebook) as item, i}
 				{#if i < 8}
-					<div>
+					<div style="width: 160px; ">
 						<span style="font-family: menlo;">{codebook[item]}</span
 						>
 						<div
