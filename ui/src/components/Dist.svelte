@@ -15,7 +15,7 @@
 		style,
 	};
 
-	function toJson(data, shape, label = "Original Weights") {
+	function toJson(data, shape, label = "Weights (W)") {
 		let total = [];
 		for (let i = 0; i < shape[0]; i++) {
 			for (let j = 0; j < shape[1]; j++) {
@@ -31,7 +31,7 @@
 			div?.firstChild?.remove(); // remove old chart, if any
 			let d = toJson(data, shape);
 			if (data2) {
-				d = d.concat(toJson(data2, shape, "Quantized Weights"));
+				d = d.concat(toJson(data2, shape, "Quantized Weights (Q)"));
 				// d = toJson(data2, shape, "Quantized Weights");
 			}
 			div?.append(
