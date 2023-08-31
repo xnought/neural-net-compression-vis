@@ -1,5 +1,5 @@
 ---
-title: Compressing Neural Network Weights
+title: Visualizing Neural Network Compression
 lastUpdate: August 2023
 ---
 
@@ -323,3 +323,13 @@ Also make sure to take into account how the weights are used so you know exactly
 -   [Observable Plot](https://observablehq.com/plot/) was extremely useful
 -   [SveltePress](https://sveltepress.site/) is really awesome out of the box
 -   [KaTeX](https://katex.org/) for math equations
+
+## Cite
+
+```bibtex
+@misc{bertucci2023viscompress,
+   author = {Bertucci, Donald and Perer, Adam},
+   title  = {{Visualizing Neural Network Compression}},
+   year   = {2023}
+}
+```
