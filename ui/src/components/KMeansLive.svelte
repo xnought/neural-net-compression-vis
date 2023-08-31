@@ -92,7 +92,7 @@
 </select>
 
 <input type="range" min="1" max="8" bind:value={bits} />
-{bits} bits
+<span class="label">{bits} bits</span>
 {#if data}
 	{@const quantizedData = quant.reconstruct()}
 	<Heatmap

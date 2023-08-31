@@ -165,25 +165,20 @@ This error image <Math text="E" /> is what you see in red above. Then I simply a
 
 ## Matrix Multiplication
 
-For neural network weights, we aren't viewing them as images. So what makes their compression good or not?
+Then, how do we attach a number to the compression error for neural networks? Again, we aren't viewing them as images. So what makes their compression good or not?
 
-Take this three layer neural network
+Take this three layer neural network <Math text="\text[ReLU]\left(\text[ReLU]\left(xW_1^T + b_1\right)W_2^T + b_2\right)W_3^T + b_3.\tag[2]" big/> where <Math text="W_i" /> are weights and <Math text="b_i" /> are biases at layer <Math text="i"/>.
 
-<Math text="\text[ReLU]\left(\text[ReLU]\left(xW_1^T + b_1\right)W_2^T + b_2\right)W_3^T + b_3.\tag[2]" big/>
+Just like image example, we must create a metric based on the use-case. Since almost all the operations on the weights are matrix multiplies, it might be a good idea to take this operation into account as the use-case. In other words, how does the approximate compressed weights differ after a matrix multiplication of the same input compared to the original/exact weights? It might be the case the the multiplies and adds amplify or even hide element-wise error!
 
-where <Math text="W_i" /> are weights and <Math text="b_i" /> are biases at layer <Math text="i"/>.
-
-Just like we created an error metric for the use-case for images, we should do the same here. Since almost all the operations on the weights are matrix multiplies, it greatly matters we know how the error amplifies or hides under matrix multiplies for the quantized weights. Just doing an element-wise difference would not capture what matrix multiplication is actually doing.
-
-:::warning
-Things are about to get mathematically dense for a small while. It pains me to say that it's easier to write concisely with notation.
+:::warning[MATH WARNING]
+Things are about to get mathematically dense for a small while.
 :::
 
-With matrix multiplication we are doing a linear combination of the columns of the matrix defined by each number in the vector. Namely, <Math text="Wx = y" /> where <Math text="W" /> is the matrix, <Math text="x" /> is the column vector, and <Math text="y" /> is the output of the matrix multiply. Alternatively, think of <Math text="W" /> as transforming <Math text="x" /> into <Math text="y" />.
+With matrix multiplication we are doing a linear combination of the columns of the matrix defined by each number in the input vector. Namely, <Math text="Wx = y" /> where <Math text="W" /> is the matrix, <Math text="x" /> is the column vector, and <Math text="y" /> is the output of the matrix multiply. Alternatively, think of <Math text="W" /> as transforming <Math text="x" /> into <Math text="y" />.
 
-I can also define <Math text="W" /> compressed/quantized as <Math text="Q" />. The <Math text="Q" /> matrix transforms the input <Math text="x" /> into some approximate output <Math text="\hat[y]" />. Cleary, since <Math text="Q" /> is an approximate <Math text="W" /> so the output would also be approximate.
-I can then express the differences between the outputs <Math text="y" /> and <Math text="\hat[y]" /> in a single error term
-<Math text="\text[error] &:= \frac[||y - \hat[y]||][||y||]\tag[3]" begin="align*" /> which is the size of how wrong the approximation is.
+I can also define <Math text="W" /> compressed/quantized as <Math text="Q" />. The <Math text="Q" /> matrix transforms the input <Math text="x" /> into some approximate output <Math text="\hat[y]" />. Since <Math text="Q" /> is an approximate <Math text="W" />, the output would also be approximate. I can then express the differences between the outputs <Math text="y" /> and <Math text="\hat[y]" /> in a single error term
+<Math text="\text[error] &:= \frac[||y - \hat[y]||][||y||]\tag[3]" begin="align*" /> which is the size of how wrong the approximation is after the matrix multiply.
 
 :::note
 I use the vector 1-norm here denoted by <Math text="||\cdot||" /> to give me the size of a vector. It's just the absolute value and sum of the numbers. Just like the image example before.
@@ -195,9 +190,9 @@ And since <Math text="Wx = y" /> and <Math text="Qx = \hat[y]" /> I can write th
 \frac[||y - \hat[y]||][||y||] = \frac[||Wx - Qx||][||Wx||]\tag[4]\\
 " begin="align*" />
 
-simply by how I defined things.
+simply by how I defined things. Nothing new yet.
 
-As is turns out, I can factor this error term into a term that only contains <Math text="W" /> and one other that contains both <Math text="Q" /> and <Math text="W" /> through the steps
+As is turns out, I can factor the error term in <Math text="(4)" /> into one term that only contains <Math text="W" /> and other term that contains both <Math text="Q" /> and <Math text="W" /> through the steps
 <Math begin="align*" 
 text="
 \frac[||Wx - Qx||][||Wx||] &= \frac[||(W-Q)x||][||Wx||]\\
@@ -218,25 +213,29 @@ I use the matrix operator norm because the vector norm of a matrix doesn't captu
 This is a [good video](https://www.youtube.com/watch?v=G2RKg1pHApc) on the matrix operator norm induced by the 2-norm for some intuition.
 :::
 
-The first term defined by only <Math text="W" /> as <Math text="||W|| \ ||W^[-1]||" /> is a very useful number in many applications for linear problems: the condition number. The second term looks quite similar to the image pixel error case as the difference between the matrices with a norm applied as <Math text="\frac[||W-Q||][||W||]" />. But remember now we use the matrix operator norm.
+The first term <Math text="W" /> as <Math text="||W|| \ ||W^[-1]||" /> is a very useful number in many applications for linear problems: the condition number. The second term <Math text="\frac[||W-Q||][||W||]" /> looks quite similar to the image pixel error case. What's really important is that there is error inherent to the original matrix in the condition number. The condition number then scales the difference between original and compressed (the second term).
 
 Let's see what error looks like on some different weight matrices!
 
 :::important[YOUR TURN]
-Select a distribution for the weights and how much you'd like to quantize the weights by dragging the slider. Observe the error terms and when the weights look similar.
+Select a distribution for the weights and how much you'd like to quantize the weights by dragging the slider.
+
+The bits is the level of quantization. Really this means we're sharing <Math text="2^[\text[bits]]" /> values. I use the bits notation because that will be the size of our index number after quantization.
+
+Then, observe the error terms and when the weights look similar.
+
+You might also consider hovering over the weights to see the exact values.
 :::
 
 <KMeansLive />
 
-Unsurprisingly, the error drops drastically when we have enough weights to share. The error is close to zero and is 4 times smaller! That is a total win!
+Unsurprisingly, the error drops drastically when we have enough weights to share. Additionally, the error gets close to zero and the quantization makes the weights 4 times smaller! That is a total win!
 
-My second observation is that not all weight distributions have the same condition number. Additionally, it seems to be that k-means quantization does quite well, if not better, when the condition number is higher. How could this be?
+My second observation is that not all weight distributions have the same condition number. Additionally, it seems to be that k-means quantization does quite well, if not better, when the condition number is higher. How could this be? Surely this is wrong.
 
-The condition number, which scales the error term, becomes very high with spiked values (outliers). This makes sense given small errors to these values would change the matrix multiply drastically.
+Yes I'm partially wrong. The condition number, which scales the error term, becomes very high with spiked values (outliers). This makes sense given small errors to these values would change the matrix multiply drastically. But at the very same time, k-means is known to be sensitive to outliers (to a fault). So k-means gives an entire shared weight to the outlier. Most of the time this is terrible for compression, but since k-means quantization is non-linear, it's a total win for this small example.
 
-But at the very same time, k-means is known to be sensitive to outliers (to a fault). So k-means gives an entire shared weight to the outlier. Most of the time this is terrible for compression, but since k-means quantization is non-linear, it's a total win.
-
-This is a bit of a tangent, but k-means has a clear advantage over linear quantization schemes in terms of minimizing error!
+This is a bit of a tangent, but k-means has a clear advantage over linear quantization schemes in terms of minimizing error depending on how large your weight matrix is.
 
 :::note
 Depending on the underlying distribution, it may be that k-means does not encode an entire value to the outlier point. So more analysis is needed here to minimize error or predict performance.
