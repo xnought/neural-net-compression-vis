@@ -17,7 +17,7 @@ const config = defineConfig({
 							collapsible: true,
 							items: [
 								{
-									title: "Visualizing Quantization Error",
+									title: "Compressing Neural Network Weights",
 									to: "quant",
 								},
 							],
