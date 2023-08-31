@@ -281,20 +281,45 @@ Draw on the left side blackboard a number and see how the model reconstructs you
 
 As you can see, with a small number of bits, the output reconstruction is terrible. But as you pass some threshold it becomes quite good and doesn't improve by too much. Very importantly, the quantized models are four times smaller than the original.
 
-Despite this neural network having a high maximum condition number (computed by taking the condition number over each layer and taking the max [ae_cond.ipynb](https://github.com/xnought/docs/blob/main/notebooks/ae_cond.ipynb)), using k-means quantization, the outputs look quite good: the reconstruction is accurate. I speculate again that with extra shared numbers to spare, k-means was sensitive tot he outlier which caused the high condition number, thereby masking the large effects.
+To get a condition number and some semblance of error prediction, I iterated over each layer and took the max condition number. As shown below and in [ae_cond.ipynb](https://github.com/xnought/docs/blob/main/notebooks/ae_cond.ipynb).
+
+```python
+import torch
+def matrix_operator_norm1(A):
+    """||A||"""
+    return torch.linalg.matrix_norm(A, 1)
+def cond1(A):
+    """||A||||A^{-1}||"""
+    A_inverse = torch.linalg.pinv(A)
+    return matrix_operator_norm1(A)*matrix_operator_norm1(A_inverse)
+@torch.no_grad()
+def combined_cond(model): // [svp! !!:6]
+    """max i ( ||W_i|||||W_i^{-1}|| )"""
+    weights = [param for name, param in model.named_parameters() if "weight" in name]
+    cond_nums = [cond1(param).item() for param in weights]
+    return max(cond_nums)
+print(combined_cond(model)) # 54168.84375
+```
+
+:::note
+It may make more sense to take the product or sum of the condition numbers, but I don't exactly know how non-linearities in between would hide or amplify error so I chose not to complicate things.
+:::
+
+Despite this neural network having a high maximum condition number of 54,168, the outputs look quite good after k-means quantization: the reconstruction is accurate.
+
+I speculate again that with extra shared numbers to spare, k-means was sensitive to the outlier which caused the high condition number, thereby masking the large effects and driving down the entire error term from equation <Math text="(5)" />.
 
 ## Conclusion
 
-I hope you learned some things. I certainly did!
+Perhaps not a satisfying ending, but here we are. Overall, yes it's possible to quantize the vast majority of weights in your neural network with little error. But make sure you're using the right error metrics!
 
-Overall, yes it's possible to quantize the vast majority of weights in your neural network with little error. But make sure you're using the right error metrics!
-
-Until next time :smile:
+Also make sure to take into account how the weights are used so you know exactly how much you can compress. It may be that taking into account non-linearities and other architectures could further develop the operator norm and relative error into something very useful for neural networks.
 
 ## Acknowledgments
 
--   I thank myself [Donny Bertucci](https://donnybertucci.com) for writing the article and [Adam Perer](https://perer.org/) for discussing ideas and giving me valuable feedback
--   Inspiration from [here](https://www.youtube.com/watch?v=AlASZb93rrc) which evidently is by the author of that Deep Compression Paper I referenced earlier
+-   I thank myself [Donny Bertucci](https://donnybertucci.com) for writing the article and [Adam Perer](https://perer.org/) for discussing ideas and for valuable feedback
+-   My interest in model compression came from conversations with [Venkat Sivaraman](https://venkatesh-sivaraman.github.io/)
+-   Inspiration to use k-means came from watching this [video](https://www.youtube.com/watch?v=AlASZb93rrc) (which evidently is by the author of that Deep Compression Paper)
 -   [Observable Plot](https://observablehq.com/plot/) was extremely useful
 -   [SveltePress](https://sveltepress.site/) is really awesome out of the box
 -   [KaTeX](https://katex.org/) for math equations
