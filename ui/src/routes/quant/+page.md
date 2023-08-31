@@ -57,13 +57,13 @@ lastUpdate: August 2023
 
 Modern deep learning is quite extraordinary. I don't need to convince you. You've likely seen the latest generative art models.
 
-<div style="background-image: url(cyber.jpg);height: 50px;" class="thumb"/>
+<div style="background-image: url(cyber.jpg);height: 50px; margin-bottom: -12px;" class="thumb"/>
 
 _From [Lexica](https://lexica.art/?q=cyberpunk+city)'s Aperture Model._
 
-These models generate detailed and stunning outputs. And yet, they are just transforming the inputs over and over again until a desirable output. Large models like [Stable Diffusion XL](https://stability.ai/stablediffusion) have over 3 billion parameters that transform your inputs in a sophisticated way.
+These models generate detailed and stunning outputs. And yet, they are just transforming input data over and over again until a desirable output. For example, large models like [Stable Diffusion XL](https://stability.ai/stablediffusion) transform your text and images with over 3 billion parameters into something awesome!
 
-Size enables amazing capabilities, but also limits who can run them. Most people don't have fast GPUs with lots of memory. To fit these models on our hardware, we have to reduce the size.
+Size enables amazing capabilities, but also limits who can run the models. Most people don't have fast GPUs with lots of memory. To fit these models on our hardware, we must to reduce the size.
 
 ## Sharing as Compression
 
