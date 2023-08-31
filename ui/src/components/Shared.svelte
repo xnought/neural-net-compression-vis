@@ -137,7 +137,7 @@
 							{@const d = data[j * windowSize + i]}
 							{@const color = `rgb(${d.R}, ${d.G}, ${d.B})`}
 							{@const textOffset = square / 2}
-							{@const textSize = 3}
+							{@const textSize = 4}
 							{#if d.index !== -1}
 								<rect
 									x={i * square}
@@ -153,7 +153,7 @@
 									x={i * square + textOffset}
 									y={j * square + textOffset + textSize}
 									fill="white"
-									style="font-size: 10px; font-family: menlo; font-weight: 200;"
+									style="font-size: 11px; font-family: var(--svp-code-font); font-weight: 700;"
 									text-anchor="middle">{d.index}</text
 								>
 							{/if}
@@ -172,11 +172,12 @@
 				{#each Object.keys(codebook) as item, i}
 					{#if i < 8}
 						<div style="width: 160px; ">
-							<span style="font-family: menlo;"
+							<span
+								style="font-family: var(--svp-code-font); font-weight: 800;"
 								>{codebook[item]}</span
 							>
 							<div
-								style="background: {item}; color: white; display: inline;"
+								style="background: {item}; color: white; display: inline;;"
 							>
 								{item}
 							</div>

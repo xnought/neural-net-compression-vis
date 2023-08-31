@@ -1,5 +1,6 @@
 <script>
 	import * as Plot from "@observablehq/plot";
+	import * as d3 from "d3";
 
 	let div;
 	export let data;
@@ -33,8 +34,9 @@
 			if (data2) {
 				d = d.concat(toJson(data2, shape, "Quantized Weights (Q)"));
 			}
-			div?.append(
-				Plot.plot({
+			let plt;
+			if (div) {
+				plt = Plot.plot({
 					padding: 0,
 					grid: true,
 					x: { axis: null, label: "column", inset: 30 },
@@ -57,10 +59,14 @@
 					],
 					...settings,
 					facet: { label: null },
-				})
-			);
+				});
+				div?.append(plt);
+			}
 		}
 	}
 </script>
 
 <div on:mousemove bind:this={div} role="img" />
+
+<style>
+</style>
