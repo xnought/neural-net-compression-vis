@@ -127,10 +127,5 @@
 		border-radius: 5px;
 		box-shadow: 0px 0px 2px 2px #00000020;
 		image-rendering: pixelated;
-		image-rendering: optimizeSpeed; /* Older versions of FF          */
-		image-rendering: -moz-crisp-edges; /* FF 6.0+                       */
-		image-rendering: -webkit-optimize-contrast; /* Safari                        */
-		image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */
-		-ms-interpolation-mode: nearest-neighbor; /* IE                            */
 	}
 </style>

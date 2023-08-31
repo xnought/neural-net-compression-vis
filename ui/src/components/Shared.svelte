@@ -26,12 +26,15 @@
 		return p;
 	}
 
+	function noSmoothing(ctx) {
+		ctx.imageSmoothingEnabled = false;
+	}
 	let mounted = false;
 	onMount(async () => {
 		canvasCtx = canvasEl.getContext("2d", {
 			willReadFrequently: true,
 		});
-		canvasCtx.imageSmoothingEnabled = false;
+		noSmoothing(canvasCtx);
 		await drawImage(canvasCtx, "8.png");
 		computeCodebook(canvasCtx.getImageData(0, 0, width, height).data);
 		mounted = true;
@@ -86,9 +89,15 @@
 <div style="position: relative; display: flex; gap: 10px; align-items: center;">
 	{#if notWorking}
 		<div style="color: red;">
-			<b>Visualization is supposed to be here</b>
-			Try a Chrome based browser instead. Either because imageSmoothingEnabled
-			not working or Canvas Pixelated CSS property not working.
+			<img
+				src="not-working.gif"
+				alt="each pixel indexes into shared colors"
+			/>
+			<div>
+				For an interactive visualization, try a Chrome based browser
+				instead. Fell back on GIF either because imageSmoothingEnabled
+				not working or Canvas Pixelated CSS property not working.
+			</div>
 		</div>
 	{:else}
 		<canvas bind:this={canvasEl} {width} {height} />
@@ -184,10 +193,5 @@
 		border-radius: 5px;
 		box-shadow: 0px 0px 2px 2px #00000020;
 		image-rendering: pixelated;
-		image-rendering: optimizeSpeed; /* Older versions of FF          */
-		image-rendering: -moz-crisp-edges; /* FF 6.0+                       */
-		image-rendering: -webkit-optimize-contrast; /* Safari                        */
-		image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */
-		-ms-interpolation-mode: nearest-neighbor; /* IE                            */
 	}
 </style>

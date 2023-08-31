@@ -49,12 +49,14 @@
 			diff[g + 3] = Math.round(normalized * 255);
 			error += totalDifference;
 		}
-		const img = new ImageData(width, height, { colorSpace: "srgb" });
-		img.data.set(diff);
+		const img = new ImageData(diff, width, height, { colorSpace: "srgb" });
 		ctx.diff.putImageData(img, 0, 0);
 		error /= width * height;
 	}
 
+	function noSmoothing(ctx) {
+		ctx.imageSmoothingEnabled = false;
+	}
 	let imageData, ogData;
 	onMount(async () => {
 		ctx.original = canvasEl.original.getContext("2d");
@@ -62,8 +64,8 @@
 			willReadFrequently: true,
 		});
 		ctx.diff = canvasEl.diff.getContext("2d");
-		ctx.image.imageSmoothingEnabled = false;
-		ctx.original.imageSmoothingEnabled = false;
+		noSmoothing(ctx.image);
+		noSmoothing(ctx.diff);
 
 		await Promise.allSettled([
 			drawImage(ctx.image, image),
@@ -132,11 +134,6 @@
 	canvas {
 		border-radius: 5px;
 		box-shadow: 0px 0px 2px 2px #00000020;
-		image-rendering: optimizeSpeed; /* Older versions of FF          */
-		image-rendering: -moz-crisp-edges; /* FF 6.0+                       */
-		image-rendering: -webkit-optimize-contrast; /* Safari                        */
-		image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */
-		image-rendering: pixelated; /* Awesome future-browsers       */
-		-ms-interpolation-mode: nearest-neighbor; /* IE                            */
+		image-rendering: pixelated;
 	}
 </style>
