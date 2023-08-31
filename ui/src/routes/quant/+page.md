@@ -1,5 +1,5 @@
 ---
-title: Visualizing Quantization Error
+title: Compressing Neural Network Weights
 lastUpdate: August 2023
 ---
 
@@ -51,7 +51,7 @@ lastUpdate: August 2023
     }
 </style>
 
-Often, the best models are the biggest. Too big for you or me to run. Luckily, with model compression we can drastically reduce the size of these models. This article runs through a simple way to compress neural network weights with k-means quantization and how much error we incur. There is a price to tiny.
+**Abstract:** Often, the best models are the biggest. Too big for you or me to run. Luckily, with model compression we can drastically reduce the size of these models. This article runs through a simple way to compress neural network weights with k-means quantization. Through interactive visuals, I'll explore a simple approach as well as it's shortcomings (error).
 
 ## Introduction
 
