@@ -85,8 +85,11 @@
 
 <div style="position: relative; display: flex; gap: 10px; align-items: center;">
 	{#if notWorking}
-		Canvas context imageSmoothingEnabled not working or Canvas Pixelated CSS
-		property not working in your browser, try Chrome.
+		<div style="color: red;">
+			<b>Visualization is supposed to be here</b>
+			Try a Chrome based browser instead. Either because imageSmoothingEnabled
+			not working or Canvas Pixelated CSS property not working.
+		</div>
 	{:else}
 		<canvas bind:this={canvasEl} {width} {height} />
 		<svg
@@ -181,5 +184,10 @@
 		border-radius: 5px;
 		box-shadow: 0px 0px 2px 2px #00000020;
 		image-rendering: pixelated;
+		image-rendering: optimizeSpeed; /* Older versions of FF          */
+		image-rendering: -moz-crisp-edges; /* FF 6.0+                       */
+		image-rendering: -webkit-optimize-contrast; /* Safari                        */
+		image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */
+		-ms-interpolation-mode: nearest-neighbor; /* IE                            */
 	}
 </style>
