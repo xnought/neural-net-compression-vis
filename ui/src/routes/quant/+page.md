@@ -93,9 +93,9 @@ As you know, images are made up of tons of small colored squares: pixels. I'll s
 
 In total, there are 4,824,160 colors in the image (<Math text="880 \cdot 602"/>): one for each pixel. Each color is represented by three numbers: <span style="color: rgb(255, 0, 0)">red</span>, <span style="color: rgb(0, 255, 0)">green</span>, and <span style="color: rgb(0, 0, 255)">blue</span> that mix together to make that color. In total this one image is storing nearly 15 million numbers! That is quite a bit!
 
-Instead of each pixel having a unique color, let's instead determine a few important colors and have all the other pixels share them. Exactly like the previous example with buying toys.
+Instead of each pixel having it's own unique color, why not pick the most important colors and force the pixels to share? Exactly like the previous example with buying toys. Instead of storing three numbers per every pixel, I can now just store a few colors that each pixel can index into.
 
-First, I'll take an average over all the pixels to get the most important color. Making all the pixels share that one pixel I get:
+First, I'll take an average over all the pixels to get the one most important color. Making all the pixels share that one pixel I get:
 
 <KMeansImage selected={0}/>
 
@@ -115,7 +115,7 @@ Drag the slider to increase the number of colors to share.
 
 <KMeansImage selected={1} showSlider/>
 
-After sharing just 256 colors, the images look remarkably similar. And we're only storing 256 colors!
+After sharing just 256 colors, the images look remarkably similar. And we're only storing just 256 colors instead of nearly 5 million!
 
 :::note
 I've left out some information on how to compute these multiple averages.
@@ -131,7 +131,7 @@ Instead of storing three numbers per pixel, I store one that indexes into the sh
 
 <Shared />
 
-Above, the <span style="color:salmon;" >window</span> shows a small portion of the pixels at eight color compression. As you can see, each pixel is a single number that indexes into the shared colors. Hover over the image to move the mini <span style="color:salmon;" >window</span>!
+Above, the <span style="color:salmon;" >window</span> shows a small portion of the pixels at eight (or three bit since <Math text="2^3" />) color compression. As you can see, each pixel is a single three bit number that indexes into the shared colors which contains three numbers each. Hover over the image to move the mini <span style="color:salmon;" >window</span>!
 
 ## Quantifying Error
 
