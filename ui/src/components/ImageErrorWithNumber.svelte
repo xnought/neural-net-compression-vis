@@ -62,6 +62,8 @@
 			willReadFrequently: true,
 		});
 		ctx.diff = canvasEl.diff.getContext("2d");
+		ctx.image.imageSmoothingEnabled = false;
+		ctx.original.imageSmoothingEnabled = false;
 
 		await Promise.allSettled([
 			drawImage(ctx.image, image),

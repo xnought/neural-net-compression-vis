@@ -126,5 +126,6 @@
 	canvas {
 		border-radius: 5px;
 		box-shadow: 0px 0px 2px 2px #00000020;
+		image-rendering: pixelated;
 	}
 </style>

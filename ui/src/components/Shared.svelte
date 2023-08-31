@@ -15,7 +15,6 @@
 	let windowColor = "salmon";
 
 	function drawImage(ctx, image) {
-		ctx.imageSmoothingEnabled = false;
 		const p = new Promise((resolve, reject) => {
 			const img = new Image();
 			img.src = image;
@@ -32,6 +31,7 @@
 		canvasCtx = canvasEl.getContext("2d", {
 			willReadFrequently: true,
 		});
+		canvasCtx.imageSmoothingEnabled = false;
 		await drawImage(canvasCtx, "8.png");
 		computeCodebook(canvasCtx.getImageData(0, 0, width, height).data);
 		mounted = true;

@@ -135,13 +135,15 @@ Above, the <span style="color:salmon;" >window</span> shows a small portion of t
 
 ## Quantifying Error
 
-So I think you get the point now. We can indeed reduce our budget without losing the main use-case.
+You get the point. We can indeed reduce our budget without losing the main use-case.
 
-You can apply this exact method to the weight matrix in a linear layer of a neural network! But with that comes some issues.
+You can apply this exact method to the weight matrix in a linear layer of a neural network! But in some ways, the problem is harder.
 
-First, how do we know when we've compressed the weights adequately? With the image example, we could just view all the different quantizations and see which was closest. How do you do this for arbitrary numbers learned in a neural network?
+First, how do we know when we've compressed the weights adequately? With the image example, we could just view all the different quantizations and see which was closest. How would you do this for arbitrary numbers learned in a neural network? You can't just look at them and see if they look good.
 
-Let's go back to the image case because it's more intuitive. To create an error metric I can try to make an assumption for what humans are doing. I will assume that the difference between the original pixels and and the compressed pixels is how bad our error is and how bad we perceive the image compression to be.
+Instead, we need a metric that tells us how good the compression is compared to the original.
+
+Let's go back to the image case because it's more intuitive. I will assume that the image compression when the colors are far away from the true colors. In other words, the difference between the original pixels and the compressed pixels is how bad our error is.
 
 :::important[YOUR TURN]
 Drag the slider increase the number of colors quantized. Observe the pixels that are deep red for high error.
@@ -151,7 +153,7 @@ Drag the slider increase the number of colors quantized. Observe the pixels that
 
 As you can see, when the images look very similar, the red error is almost nonexistent. I can further summarize the error with an average into one number.
 
-Now we have some conception of how good the compression was for this use-case!
+This example shows it's entirely possible to attach a number to how good the compression is.
 
 :::note
 For each pixel at (location <Math text="i" />) I find the difference between the corresponding color channels of the compressed/quantized image <Math text="Q" /> and the original image <Math text="W" />. For example if the original color was black <Math text="(0,0,0)"/> and the quantized color was white <Math text="(255,255,255)"/>, the summed error would be <Math text="|255-0| + |255-0| + |255-0| = 765" /> for that one pixel.
