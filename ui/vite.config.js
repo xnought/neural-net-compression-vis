@@ -17,7 +17,7 @@ const config = defineConfig({
 							collapsible: true,
 							items: [
 								{
-									title: "Compressing Neural Network Weights",
+									title: "Visualizing Neural Network Compression",
 									to: "quant",
 								},
 							],
