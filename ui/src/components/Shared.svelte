@@ -153,7 +153,7 @@
 									x={i * square + textOffset}
 									y={j * square + textOffset + textSize}
 									fill="white"
-									style="font-size: 11px; font-family: var(--svp-code-font); font-weight: 700;"
+									style="font-size: 11px; font-family: var(--svp-code-font); font-weight: 400;"
 									text-anchor="middle">{d.index}</text
 								>
 							{/if}
@@ -173,11 +173,11 @@
 					{#if i < 8}
 						<div style="width: 160px; ">
 							<span
-								style="font-family: var(--svp-code-font); font-weight: 800;"
+								style="font-family: var(--svp-code-font); font-weight: 500;"
 								>{codebook[item]}</span
 							>
 							<div
-								style="background: {item}; color: white; display: inline;;"
+								style="background: {item}; color: white; display: inline;"
 							>
 								{item}
 							</div>
